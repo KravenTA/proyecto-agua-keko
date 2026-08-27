@@ -55,4 +55,28 @@ class Tarifas extends BaseController
         return redirect()->to('/tarifas/nueva')
             ->with('mensaje', 'Tarifa registrada correctamente.');
     }
+
+     /**
+     * Muestra el historial de tarifas, con filtro opcional por rango de fechas. (HU-05)
+     */
+    public function historial()
+    {
+        $desde = $this->request->getGet('desde');
+        $hasta = $this->request->getGet('hasta');
+
+        $tarifaModel = new TarifaModel();
+
+        $tarifas       = $tarifaModel->historial($desde ?: null, $hasta ?: null);
+        $tarifaVigente = $tarifaModel->tarifaVigente();
+
+        return view('tarifas/historial', [
+            'title'         => 'Historial de tarifas',
+            'tarifas'       => $tarifas,
+            'tarifaVigente' => $tarifaVigente,
+            'filtros'       => [
+                'desde' => $desde,
+                'hasta' => $hasta,
+            ],
+        ]);
+    }
 }
