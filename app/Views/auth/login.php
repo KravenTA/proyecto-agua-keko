@@ -1,47 +1,56 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Iniciar sesion - Oficina del Agua</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-    <div class="container">
-        <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-body p-4">
-                        <h4 class="text-center mb-4" style="color:#c2185b;">Oficina del Agua</h4>
+<?= view('layouts/header', ['title' => 'Iniciar sesion - Oficina del Agua', 'body_class' => '']) ?>
 
-                        <?php if (session()->getFlashdata('error')) : ?>
-                            <div class="alert alert-danger">
-                                <?= esc(session()->getFlashdata('error')) ?>
+<main class="main-content mt-0">
+    <div class="page-header align-items-start min-vh-100"
+         style="background-image: linear-gradient(135deg, #c2185b 0%, #ff4081 100%);">
+        <span class="mask bg-gradient-dark opacity-6"></span>
+        <div class="container my-auto">
+            <div class="row">
+                <div class="col-lg-4 col-md-8 col-12 mx-auto">
+                    <div class="card z-index-0 fadeIn3 fadeInBottom">
+                        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                            <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1"
+                                 style="background: linear-gradient(135deg, #c2185b 0%, #ff4081 100%);">
+                                <h4 class="text-white font-weight-bolder text-center mt-2 mb-0">
+                                    Oficina del Agua
+                                </h4>
                             </div>
-                        <?php endif; ?>
+                        </div>
+                        <div class="card-body">
+                            <?php if (session()->getFlashdata('error')) : ?>
+                                <div class="alert alert-danger text-white" role="alert">
+                                    <?= esc(session()->getFlashdata('error')) ?>
+                                </div>
+                            <?php endif; ?>
 
-                        <form action="<?= base_url('login') ?>" method="post">
-                            <?= csrf_field() ?>
+                            <form role="form" action="<?= base_url('login') ?>" method="post" class="text-start">
+                                <?= csrf_field() ?>
 
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Correo</label>
-                                <input type="email" class="form-control" id="email" name="email"
-                                       value="<?= old('email') ?>" required autofocus>
-                            </div>
+                                <div class="mb-3">
+                                    <label class="form-label ms-1">Correo</label>
+                                    <input type="email" name="email" class="form-control"
+                                        value="<?= old('email') ?>" required autofocus>
+                                </div>
 
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Contrasena</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
+                                <div class="mb-3">
+                                    <label class="form-label ms-1">Contrasena</label>
+                                    <input type="password" name="password" class="form-control" required>
+                                </div>
 
-                            <button type="submit" class="btn btn-primary w-100" style="background-color:#c2185b; border:none;">
-                                Iniciar sesion
-                            </button>
-                        </form>
+                                <div class="text-center">
+                                    <button type="submit"
+                                        class="btn btn-lg w-100 mt-4 mb-0 text-white"
+                                        style="background: linear-gradient(135deg, #c2185b 0%, #ff4081 100%);">
+                                        Iniciar sesion
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</main>
+
+<?= view('layouts/footer') ?>
