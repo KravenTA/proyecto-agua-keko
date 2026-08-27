@@ -6,3 +6,4 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Auth::index');
 $routes->get('login', 'Auth::index');
 $routes->post('login', 'Auth::login');
+$routes->get('logout', 'Auth::logout');

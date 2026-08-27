@@ -42,7 +42,6 @@ class Auth extends BaseController
         $rolModel = new RolModel();
         $rol = $rolModel->find($usuario['rol_id']);
 
-        // Estas mismas claves las usará SDGODA-18 (Cerrar sesión) para destruirlas.
         session()->set([
             'usuario_id'     => $usuario['id'],
             'usuario_nombre' => $usuario['nombre'],
@@ -61,5 +60,21 @@ class Auth extends BaseController
             default:
                 return redirect()->to('/dashboard');
         }
+    }
+
+    /**
+     * Cierra la sesión del usuario y destruye todos los datos guardados
+     * por Auth::login() (usuario_id, usuario_nombre, rol_id, rol_nombre, isLoggedIn).
+     */
+        /**
+     * Cierra la sesión del usuario, eliminando las claves guardadas
+     * por Auth::login() (usuario_id, usuario_nombre, rol_id, rol_nombre, isLoggedIn).
+     */
+    public function logout()
+    {
+        session()->remove(['usuario_id', 'usuario_nombre', 'rol_id', 'rol_nombre', 'isLoggedIn']);
+
+        return redirect()->to('/login')
+            ->with('mensaje', 'Sesión cerrada correctamente.');
     }
 }
