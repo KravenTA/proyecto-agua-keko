@@ -14,7 +14,8 @@ class UsuarioModel extends Model
     protected $updatedField  = 'updated_at';
     protected $returnType    = 'array';
 
-    protected $validationRules = [
+   protected $validationRules = [
+        'id'     => 'permit_empty|is_natural_no_zero',
         'nombre' => 'required|min_length[3]|max_length[100]',
         'email'  => 'required|valid_email|max_length[150]|is_unique[usuarios.email,id,{id}]',
         'rol_id' => 'required|is_natural_no_zero|is_not_unique[roles.id]',
