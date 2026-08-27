@@ -6,6 +6,10 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Auth::index');
 $routes->get('login', 'Auth::index');
 $routes->post('login', 'Auth::login');
+$routes->get('logout', 'Auth::logout');
+
+$routes->get('tarifas/nueva', 'Tarifas::create');
+$routes->post('tarifas', 'Tarifas::store');
 
 // HU-02: Gestion de usuarios y roles (SDGODA-17)
 $routes->group('usuarios', static function ($routes) {
