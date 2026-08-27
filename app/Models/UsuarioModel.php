@@ -14,7 +14,7 @@ class UsuarioModel extends Model
     protected $updatedField  = 'updated_at';
     protected $returnType    = 'array';
 
-   protected $validationRules = [
+    protected $validationRules = [
         'id'     => 'permit_empty|is_natural_no_zero',
         'nombre' => 'required|min_length[3]|max_length[100]',
         'email'  => 'required|valid_email|max_length[150]|is_unique[usuarios.email,id,{id}]',
@@ -61,27 +61,54 @@ class UsuarioModel extends Model
         return $builder->orderBy('usuarios.nombre', 'ASC')->findAll();
     }
 
+    /**
+     * Devuelve el id del rol de administrador, tolerando diferencias de
+     * mayusculas y espacios en el nombre. Null si no se encuentra.
+     */
+    public function idRolAdministrador(): ?int
+    {
+        $roles = $this->db->table('roles')->select('id, nombre')->get()->getResultArray();
+
+        foreach ($roles as $rol) {
+            if (strtolower(trim($rol['nombre'])) === 'administrador') {
+                return (int) $rol['id'];
+            }
+        }
+
+        return null;
+    }
+
     public function contarAdminsActivos(): int
     {
-        return $this->select('usuarios.id')
-            ->join('roles', 'roles.id = usuarios.rol_id')
-            ->where('roles.nombre', 'Administrador')
-            ->where('usuarios.activo', 1)
+        $rolAdminId = $this->idRolAdministrador();
+
+        if ($rolAdminId === null) {
+            return 0;
+        }
+
+        return $this->where('rol_id', $rolAdminId)
+            ->where('activo', 1)
             ->countAllResults();
     }
 
     public function esUltimoAdminActivo(int $id): bool
     {
-        $usuario = $this->select('usuarios.activo, roles.nombre AS rol_nombre')
-            ->join('roles', 'roles.id = usuarios.rol_id')
-            ->where('usuarios.id', $id)
-            ->first();
+        $usuario = $this->find($id);
 
         if (! $usuario) {
             return false;
         }
 
-        if ($usuario['rol_nombre'] !== 'Administrador' || (int) $usuario['activo'] !== 1) {
+        $rolAdminId = $this->idRolAdministrador();
+
+        // Si no se puede identificar el rol de administrador, bloqueamos por
+        // precaucion: es preferible impedir una accion valida que dejar el
+        // sistema sin ningun administrador.
+        if ($rolAdminId === null) {
+            return true;
+        }
+
+        if ((int) $usuario['rol_id'] !== $rolAdminId || (int) $usuario['activo'] !== 1) {
             return false;
         }
 

@@ -130,7 +130,7 @@ class Usuarios extends BaseController
         $activoNuevo = $this->request->getPost('activo') ? 1 : 0;
 
         if ($this->usuarios->esUltimoAdminActivo($id)) {
-            $rolAdmin = $this->roles->where('nombre', 'Administrador')->first();
+            $rolAdminId = $this->usuarios->idRolAdministrador();
 
             if ($activoNuevo === 0) {
                 return redirect()->back()->withInput()->with('errores', [
@@ -138,7 +138,7 @@ class Usuarios extends BaseController
                 ]);
             }
 
-            if ($rolAdmin && $rolIdNuevo !== (int) $rolAdmin['id']) {
+            if ($rolAdminId !== null && $rolIdNuevo !== $rolAdminId) {
                 return redirect()->back()->withInput()->with('errores', [
                     'No puedes cambiarle el rol al unico administrador activo. Crea o activa otro administrador primero.',
                 ]);
