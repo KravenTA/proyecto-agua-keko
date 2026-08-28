@@ -1,4 +1,4 @@
-¿<?= view('layouts/header', [
+<?= view('layouts/header', [
         'title'      => esc($title) . ' - Oficina del Agua',
         'body_class' => 'g-sidenav-show bg-gray-100',
     ]) ?>
