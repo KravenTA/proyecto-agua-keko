@@ -32,17 +32,18 @@
                             <div class="col-md-4">
                                 <label class="form-label ms-1">Desde</label>
                                 <input type="date" name="desde" class="form-control"
-                                       value="<?= esc($filtros['desde'] ?? '') ?>">
+                                    value="<?= esc($filtros['desde'] ?? '') ?>">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label ms-1">Hasta</label>
                                 <input type="date" name="hasta" class="form-control"
-                                       value="<?= esc($filtros['hasta'] ?? '') ?>">
+                                    value="<?= esc($filtros['hasta'] ?? '') ?>">
                             </div>
-                            <div class="col-md-4 d-flex align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label ms-1 d-block invisible">Filtrar</label>
                                 <button type="submit"
-                                    class="btn w-100 text-white"
-                                    style="background: linear-gradient(135deg, #1565c0 0%, #29b6f6 100%);">
+                                    class="btn w-100 text-white m-0"
+                                    style="background: linear-gradient(135deg, #1565c0 0%, #29b6f6 100%); height: 45px;">
                                     Filtrar
                                 </button>
                             </div>
@@ -57,6 +58,7 @@
                                         <th>Vigente desde</th>
                                         <th>Vigente hasta</th>
                                         <th>Estado</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -85,6 +87,9 @@
                                                 <?php else : ?>
                                                     <span class="badge bg-light text-dark">Activa</span>
                                                 <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <a href="<?= base_url('tarifas/editar/' . $tarifa['id']) ?>">Editar</a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
