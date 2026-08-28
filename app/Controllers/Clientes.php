@@ -30,17 +30,139 @@ class Clientes extends BaseController
     public function nuevo()
     {
         return view('clientes/form', [
-            'title' => 'Nuevo cliente',
+            'title'   => 'Nuevo cliente',
+            'cliente' => null,
         ]);
     }
 
     /**
      * Procesa el registro de un nuevo cliente. (HU-07)
-     * Criterios: valida campos obligatorios, guarda en BD, muestra confirmacion.
      */
     public function crear()
     {
-        $reglas = [
+        $reglas = $this->reglasValidacion();
+
+        if (! $this->validate($reglas)) {
+            return redirect()->back()->withInput()
+                ->with('errores', $this->validator->getErrors());
+        }
+
+        $datos = [
+            'nombre'    => trim((string) $this->request->getPost('nombre')),
+            'telefono'  => trim((string) $this->request->getPost('telefono')),
+            'direccion' => trim((string) $this->request->getPost('direccion')),
+            'email'     => trim((string) $this->request->getPost('email')) ?: null,
+            'activo'    => 1,
+        ];
+
+        if (! $this->clientes->insert($datos)) {
+            return redirect()->back()->withInput()
+                ->with('errores', $this->clientes->errors());
+        }
+
+        return redirect()->to('/clientes')
+            ->with('exito', 'Cliente "' . esc($datos['nombre']) . '" registrado correctamente.');
+    }
+
+    /**
+     * Formulario para editar un cliente existente. (HU-08)
+     */
+    public function editar($id = null)
+    {
+        $cliente = $this->clientes->find((int) $id);
+
+        if (! $cliente) {
+            return redirect()->to('/clientes')->with('errores', ['Ese cliente no existe.']);
+        }
+
+        return view('clientes/form', [
+            'title'   => 'Editar cliente',
+            'cliente' => $cliente,
+        ]);
+    }
+
+    /**
+     * Procesa la edicion de un cliente. (HU-08)
+     * Criterio: la edicion refleja cambios inmediatos.
+     */
+    public function actualizar($id = null)
+    {
+        $id      = (int) $id;
+        $cliente = $this->clientes->find($id);
+
+        if (! $cliente) {
+            return redirect()->to('/clientes')->with('errores', ['Ese cliente no existe.']);
+        }
+
+        $reglas = $this->reglasValidacion();
+
+        if (! $this->validate($reglas)) {
+            return redirect()->back()->withInput()
+                ->with('errores', $this->validator->getErrors());
+        }
+
+        $datos = [
+            'nombre'    => trim((string) $this->request->getPost('nombre')),
+            'telefono'  => trim((string) $this->request->getPost('telefono')),
+            'direccion' => trim((string) $this->request->getPost('direccion')),
+            'email'     => trim((string) $this->request->getPost('email')) ?: null,
+        ];
+
+        if (! $this->clientes->update($id, $datos)) {
+            return redirect()->back()->withInput()
+                ->with('errores', $this->clientes->errors());
+        }
+
+        return redirect()->to('/clientes')
+            ->with('exito', 'Cliente "' . esc($datos['nombre']) . '" actualizado correctamente.');
+    }
+
+    /**
+     * Desactiva ("elimina") un cliente. (HU-08)
+     * Criterio: no permite eliminar cliente con contadores activos.
+     */
+    public function eliminar($id = null)
+    {
+        $id      = (int) $id;
+        $cliente = $this->clientes->find($id);
+
+        if (! $cliente) {
+            return redirect()->to('/clientes')->with('errores', ['Ese cliente no existe.']);
+        }
+
+        if ($this->clientes->tieneContadoresActivos($id)) {
+            return redirect()->to('/clientes')->with('errores', [
+                'No puedes eliminar a "' . esc($cliente['nombre']) . '" porque tiene contadores activos asociados. Da de baja sus contadores primero.',
+            ]);
+        }
+
+        $this->clientes->update($id, ['activo' => 0]);
+
+        return redirect()->to('/clientes')
+            ->with('exito', 'Cliente "' . esc($cliente['nombre']) . '" desactivado correctamente.');
+    }
+
+    /**
+     * Reactiva un cliente previamente desactivado.
+     */
+    public function activar($id = null)
+    {
+        $id      = (int) $id;
+        $cliente = $this->clientes->find($id);
+
+        if (! $cliente) {
+            return redirect()->to('/clientes')->with('errores', ['Ese cliente no existe.']);
+        }
+
+        $this->clientes->update($id, ['activo' => 1]);
+
+        return redirect()->to('/clientes')
+            ->with('exito', 'Cliente "' . esc($cliente['nombre']) . '" activado correctamente.');
+    }
+
+    private function reglasValidacion(): array
+    {
+        return [
             'nombre' => [
                 'rules'  => 'required|min_length[3]|max_length[100]',
                 'errors' => [
@@ -69,26 +191,5 @@ class Clientes extends BaseController
                 ],
             ],
         ];
-
-        if (! $this->validate($reglas)) {
-            return redirect()->back()->withInput()
-                ->with('errores', $this->validator->getErrors());
-        }
-
-        $datos = [
-            'nombre'    => trim((string) $this->request->getPost('nombre')),
-            'telefono'  => trim((string) $this->request->getPost('telefono')),
-            'direccion' => trim((string) $this->request->getPost('direccion')),
-            'email'     => trim((string) $this->request->getPost('email')) ?: null,
-            'activo'    => 1,
-        ];
-
-        if (! $this->clientes->insert($datos)) {
-            return redirect()->back()->withInput()
-                ->with('errores', $this->clientes->errors());
-        }
-
-        return redirect()->to('/clientes')
-            ->with('exito', 'Cliente "' . esc($datos['nombre']) . '" registrado correctamente.');
     }
 }
