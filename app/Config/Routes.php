@@ -11,6 +11,9 @@ $routes->get('logout', 'Auth::logout');
 $routes->get('tarifas/nueva', 'Tarifas::create');
 $routes->post('tarifas', 'Tarifas::store');
 $routes->get('tarifas/historial', 'Tarifas::historial');
+$routes->get('tarifas/editar/(:num)', 'Tarifas::editar/$1');
+$routes->post('tarifas/actualizar/(:num)', 'Tarifas::actualizar/$1');
+$routes->post('tarifas/cerrar-vigencia/(:num)', 'Tarifas::cerrarVigencia/$1');
 
 // HU-02: Gestion de usuarios y roles (SDGODA-17)
 $routes->group('usuarios', static function ($routes) {
