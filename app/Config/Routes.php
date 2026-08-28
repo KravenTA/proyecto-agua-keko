@@ -25,3 +25,10 @@ $routes->group('usuarios', static function ($routes) {
     $routes->post('eliminar/(:num)', 'Usuarios::eliminar/$1');
     $routes->post('activar/(:num)', 'Usuarios::activar/$1');
 });
+
+// HU-07: Registrar cliente (SDGODA-XX)
+$routes->group('clientes', static function ($routes) {
+    $routes->get('/', 'Clientes::index');
+    $routes->get('nuevo', 'Clientes::nuevo');
+    $routes->post('/', 'Clientes::crear');
+});
