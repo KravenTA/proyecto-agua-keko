@@ -25,9 +25,22 @@
                 </li>
             <?php endif; ?>
 
-            <?php /*
+             <li class="nav-item">
+                <a class="nav-link <?= url_is('contadores*') ? 'active' : '' ?>"
+                   href="<?= base_url('contadores') ?>">
+                    <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-settings-gear-65 text-primary text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Contadores</span>
+                </a>
+            </li>
+
+            <?php 
+            
+                            
+            /*
                 Modulos pendientes. Cada equipo descomenta el suyo cuando lo implemente:
-                Clientes (ni-circle-08), Contadores (ni-settings-gear-65),
+                Clientes (ni-circle-08),
                 Tarifas (ni-money-coins), Lecturas (ni-bullet-list-67), Pagos (ni-chart-bar-32)
             */ ?>
 
