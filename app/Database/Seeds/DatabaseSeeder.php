@@ -10,5 +10,12 @@ class DatabaseSeeder extends Seeder
     {
         $this->call('RolesSeeder');
         $this->call('UsuariosSeeder');
+        $this->call('ClientesSeeder');
+        $this->call('SectoresSeeder');
+        $this->call('PeriodosSeeder');
+        $this->call('TarifasSeeder');
+        $this->call('ServiciosSeeder');
+        $this->call('ContadoresSeeder');
+        $this->call('LecturasSeeder');
     }
 }
