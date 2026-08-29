@@ -37,3 +37,10 @@ $routes->group('clientes', static function ($routes) {
     $routes->post('eliminar/(:num)', 'Clientes::eliminar/$1');
     $routes->post('activar/(:num)', 'Clientes::activar/$1');
 });
+
+// HU-10: Registrar contador/predio y asociarlo a un cliente (SDGODA-25)
+$routes->group('contadores', static function ($routes) {
+    $routes->get('/', 'Contadores::index');
+    $routes->get('nuevo', 'Contadores::nuevo');
+    $routes->post('/', 'Contadores::crear');
+});
