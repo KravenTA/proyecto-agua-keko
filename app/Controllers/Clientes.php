@@ -13,14 +13,38 @@ class Clientes extends BaseController
         $this->clientes = new ClienteModel();
     }
 
-    /**
-     * Listado de clientes registrados.
-     */
     public function index()
     {
+        $termino = trim((string) $this->request->getGet('q'));
+        $activo  = (string) ($this->request->getGet('activo') ?? '');
+
+        $clientes = $this->clientes->buscar($termino, $activo)->paginate(10);
+
         return view('clientes/index', [
             'title'    => 'Clientes',
-            'clientes' => $this->clientes->orderBy('nombre', 'ASC')->findAll(),
+            'clientes' => $clientes,
+            'pager'    => $this->clientes->pager,
+            'termino'  => $termino,
+            'activo'   => $activo,
+        ]);
+    }
+
+    /**
+     * Devuelve solo la tabla de resultados, para actualizarla por AJAX
+     * sin recargar la pagina completa. (HU-09)
+     */
+    public function tabla()
+    {
+        $termino = trim((string) $this->request->getGet('q'));
+        $activo  = (string) ($this->request->getGet('activo') ?? '');
+
+        $clientes = $this->clientes->buscar($termino, $activo)->paginate(10);
+
+        return view('clientes/_tabla', [
+            'clientes' => $clientes,
+            'pager'    => $this->clientes->pager,
+            'termino'  => $termino,
+            'activo'   => $activo,
         ]);
     }
 

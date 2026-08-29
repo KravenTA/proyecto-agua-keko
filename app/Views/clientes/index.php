@@ -32,69 +32,113 @@
                 </a>
             </div>
 
-            <div class="card-body px-0 pt-3 pb-2">
-                <div class="table-responsive p-0">
-                    <table class="table align-items-center mb-0">
-                        <thead>
-                            <tr>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-4">Nombre</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Telefono</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Direccion</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Correo</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Estado</th>
-                                <th class="text-secondary opacity-7"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($clientes)) : ?>
-                                <tr>
-                                    <td colspan="6" class="text-center text-sm text-secondary py-4">
-                                        Aun no hay clientes registrados.
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
-
-                            <?php foreach ($clientes as $c) : ?>
-                                <tr>
-                                    <td class="ps-4"><span class="text-sm font-weight-bold"><?= esc($c['nombre']) ?></span></td>
-                                    <td><span class="text-sm text-secondary"><?= esc($c['telefono']) ?></span></td>
-                                    <td><span class="text-sm text-secondary"><?= esc($c['direccion'] ?? '-') ?></span></td>
-                                    <td><span class="text-sm text-secondary"><?= esc($c['email'] ?? '-') ?></span></td>
-                                    <td>
-                                        <?php if ((int) $c['activo'] === 1) : ?>
-                                            <span class="badge badge-sm bg-gradient-success">Activo</span>
-                                        <?php else : ?>
-                                            <span class="badge badge-sm bg-gradient-secondary">Inactivo</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <a href="<?= base_url('clientes/editar/' . $c['id']) ?>"
-                                           class="btn btn-link text-dark px-2 mb-0">Editar</a>
-
-                                        <?php if ((int) $c['activo'] === 1) : ?>
-                                            <form action="<?= base_url('clientes/eliminar/' . $c['id']) ?>"
-                                                  method="post" class="d-inline"
-                                                  onsubmit="return confirm('¿Eliminar (desactivar) a este cliente?');">
-                                                <?= csrf_field() ?>
-                                                <button type="submit" class="btn btn-link text-danger px-2 mb-0">Eliminar</button>
-                                            </form>
-                                        <?php else : ?>
-                                            <form action="<?= base_url('clientes/activar/' . $c['id']) ?>"
-                                                  method="post" class="d-inline">
-                                                <?= csrf_field() ?>
-                                                <button type="submit" class="btn btn-link text-success px-2 mb-0">Activar</button>
-                                            </form>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+            <div class="card-body pb-2">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-7">
+                        <label for="buscador" class="form-label text-xs">Buscar</label>
+                        <input type="text" class="form-control form-control-sm" id="buscador"
+                               placeholder="Nombre, telefono o correo"
+                               value="<?= esc($termino) ?>" autocomplete="off">
+                    </div>
+                    <div class="col-8 col-md-3">
+                        <label for="filtro-activo" class="form-label text-xs">Estado</label>
+                        <select class="form-control form-control-sm" id="filtro-activo">
+                            <option value="">Todos</option>
+                            <option value="1" <?= $activo === '1' ? 'selected' : '' ?>>Activos</option>
+                            <option value="0" <?= $activo === '0' ? 'selected' : '' ?>>Inactivos</option>
+                        </select>
+                    </div>
+                    <div class="col-4 col-md-2 text-end">
+                        <span class="text-xs text-secondary d-none" id="cargando">Buscando...</span>
+                    </div>
                 </div>
+            </div>
+
+            <div class="card-body px-0 pt-3 pb-2" id="contenedor-tabla">
+                <?= view('clientes/_tabla', [
+                        'clientes' => $clientes,
+                        'pager'    => $pager,
+                        'termino'  => $termino,
+                        'activo'   => $activo,
+                    ]) ?>
             </div>
         </div>
 
     </div>
 </main>
+
+<script>
+(function () {
+    const buscador   = document.getElementById('buscador');
+    const filtro     = document.getElementById('filtro-activo');
+    const contenedor = document.getElementById('contenedor-tabla');
+    const cargando   = document.getElementById('cargando');
+    const urlBase    = '<?= base_url('clientes/tabla') ?>';
+
+    let temporizador = null;
+    let peticion     = null;
+
+    function construirUrl(pagina) {
+        const params = new URLSearchParams();
+        if (buscador.value.trim() !== '') params.set('q', buscador.value.trim());
+        if (filtro.value !== '')          params.set('activo', filtro.value);
+        if (pagina)                       params.set('page', pagina);
+        return urlBase + '?' + params.toString();
+    }
+
+    async function actualizar(pagina) {
+        if (peticion) peticion.abort();
+        peticion = new AbortController();
+
+        cargando.classList.remove('d-none');
+
+        try {
+            const respuesta = await fetch(construirUrl(pagina), {
+                signal: peticion.signal,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (! respuesta.ok) throw new Error('Respuesta ' + respuesta.status);
+
+            contenedor.innerHTML = await respuesta.text();
+
+            // Refleja la busqueda en la URL sin recargar, para poder compartirla.
+            history.replaceState(null, '', '<?= base_url('clientes') ?>?' +
+                construirUrl(pagina).split('?')[1]);
+
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                contenedor.innerHTML =
+                    '<p class="text-center text-sm text-danger py-4">' +
+                    'No se pudo cargar la lista. Revisa tu conexion e intenta de nuevo.</p>';
+            }
+        } finally {
+            cargando.classList.add('d-none');
+        }
+    }
+
+    // Espera a que el usuario deje de escribir antes de consultar.
+    buscador.addEventListener('input', function () {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(() => actualizar(1), 500);
+    });
+
+    filtro.addEventListener('change', () => actualizar(1));
+
+    // Los enlaces del paginador se generan despues, por eso se escucha
+    // el contenedor y no cada enlace por separado.
+    contenedor.addEventListener('click', function (evento) {
+        const enlace = evento.target.closest('.pagination a');
+        if (! enlace) return;
+
+        evento.preventDefault();
+
+        const pagina = new URL(enlace.href, window.location.origin)
+            .searchParams.get('page');
+
+        actualizar(pagina || 1);
+    });
+})();
+</script>
 
 <?= view('layouts/footer') ?>
