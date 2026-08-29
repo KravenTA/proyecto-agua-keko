@@ -25,11 +25,17 @@
                 </li>
             <?php endif; ?>
 
-            <?php /*
-                Modulos pendientes. Cada equipo descomenta el suyo cuando lo implemente:
-                Clientes (ni-circle-08), Contadores (ni-settings-gear-65),
-                Tarifas (ni-money-coins), Lecturas (ni-bullet-list-67), Pagos (ni-chart-bar-32)
-            */ ?>
+            <?php if (in_array(session()->get('rol_nombre'), ['Administrador', 'Secretaria'], true)) : ?>
+                <li class="nav-item">
+                    <a class="nav-link <?= url_is('clientes*') ? 'active' : '' ?>"
+                        href="<?= base_url('clientes') ?>">
+                        <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                            <i class="ni ni-circle-08 text-primary text-sm opacity-10"></i>
+                        </div>
+                        <span class="nav-link-text ms-1">Clientes</span>
+                    </a>
+                </li>
+            <?php endif; ?>
 
         </ul>
     </div>
