@@ -29,6 +29,7 @@ $routes->group('usuarios', static function ($routes) {
 // HU-07/HU-08: Registrar, editar y eliminar cliente (SDGODA-XX)
 $routes->group('clientes', static function ($routes) {
     $routes->get('/', 'Clientes::index');
+    $routes->get('tabla', 'Clientes::tabla');
     $routes->get('nuevo', 'Clientes::nuevo');
     $routes->post('/', 'Clientes::crear');
     $routes->get('editar/(:num)', 'Clientes::editar/$1');
