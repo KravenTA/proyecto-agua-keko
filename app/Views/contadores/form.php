@@ -5,6 +5,13 @@
 
 <?= view('layouts/sidenav') ?>
 
+<?php
+    $esEdicion = ! empty($contador);
+    $accion    = $esEdicion
+        ? base_url('contadores/actualizar/' . $contador['id'])
+        : base_url('contadores');
+?>
+
 <main class="main-content position-relative border-radius-lg">
     <div class="container-fluid py-4">
         <div class="row justify-content-center">
@@ -20,7 +27,7 @@
                     </div>
                 <?php endif; ?>
 
-                <?php if (empty($sectores)) : ?>
+                <?php if (! $esEdicion && empty($sectores)) : ?>
                     <div class="alert alert-warning text-white" role="alert">
                         Todavia no hay sectores registrados en el sistema. Pide que agreguen al
                         menos uno en la tabla <code>sectores</code> antes de registrar un contador.
@@ -31,59 +38,74 @@
                     <div class="card-header pb-0">
                         <h6 class="mb-0"><?= esc($title) ?></h6>
                         <p class="text-sm text-secondary mb-0">
-                            Registra el contador y el predio que lo conecta con un cliente.
+                            <?= $esEdicion
+                                ? 'Actualiza el codigo, la lectura inicial o la fecha de instalacion de este contador.'
+                                : 'Registra el contador y el predio que lo conecta con un cliente.' ?>
                         </p>
                     </div>
 
                     <div class="card-body">
-                        <form method="post" action="<?= base_url('contadores') ?>">
+                        <form method="post" action="<?= $accion ?>">
                             <?= csrf_field() ?>
 
-                            <div class="mb-3">
-                                <label class="form-label">Cliente asociado</label>
-                                <select class="form-control" name="cliente_id" required>
-                                    <option value="">Elige un cliente</option>
-                                    <?php foreach ($clientes as $cliente) : ?>
-                                        <?php $sel = (string) old('cliente_id') === (string) $cliente['id']; ?>
-                                        <option value="<?= $cliente['id'] ?>" <?= $sel ? 'selected' : '' ?>>
-                                            <?= esc($cliente['nombre']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <?php if (empty($clientes)) : ?>
-                                    <small class="text-danger">
-                                        No hay clientes activos. Registra uno primero en el modulo de Clientes.
+                            <?php if (! $esEdicion) : ?>
+                                <div class="mb-3">
+                                    <label class="form-label">Cliente asociado</label>
+                                    <select class="form-control" name="cliente_id" required>
+                                        <option value="">Elige un cliente</option>
+                                        <?php foreach ($clientes as $cliente) : ?>
+                                            <?php $sel = (string) old('cliente_id') === (string) $cliente['id']; ?>
+                                            <option value="<?= $cliente['id'] ?>" <?= $sel ? 'selected' : '' ?>>
+                                                <?= esc($cliente['nombre']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <?php if (empty($clientes)) : ?>
+                                        <small class="text-danger">
+                                            No hay clientes activos. Registra uno primero en el modulo de Clientes.
+                                        </small>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Sector</label>
+                                    <select class="form-control" name="sector_id" required>
+                                        <option value="">Elige un sector</option>
+                                        <?php foreach ($sectores as $sector) : ?>
+                                            <?php $sel = (string) old('sector_id') === (string) $sector['id']; ?>
+                                            <option value="<?= $sector['id'] ?>" <?= $sel ? 'selected' : '' ?>>
+                                                <?= esc($sector['nombre']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Referencia del predio</label>
+                                    <input type="text" class="form-control" name="referencia" maxlength="150"
+                                           value="<?= esc(old('referencia')) ?>"
+                                           placeholder="Ej. Casa color celeste, 2da entrada del caserio">
+                                    <small class="text-xs text-secondary">Opcional, ayuda a ubicar el predio en campo.</small>
+                                </div>
+
+                                <hr class="horizontal dark">
+                            <?php else : ?>
+                                <div class="mb-3">
+                                    <label class="form-label">Cliente / predio</label>
+                                    <input type="text" class="form-control" value="<?= esc($contador['cliente_nombre'] ?? '') ?> &mdash; <?= esc($contador['referencia'] ?? 'sin referencia') ?>" disabled>
+                                    <small class="text-xs text-secondary">
+                                        El cliente y el predio no se cambian aqui. Si el contador se movio a otro
+                                        predio, desactivalo y registra uno nuevo.
                                     </small>
-                                <?php endif; ?>
-                            </div>
+                                </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Sector</label>
-                                <select class="form-control" name="sector_id" required>
-                                    <option value="">Elige un sector</option>
-                                    <?php foreach ($sectores as $sector) : ?>
-                                        <?php $sel = (string) old('sector_id') === (string) $sector['id']; ?>
-                                        <option value="<?= $sector['id'] ?>" <?= $sel ? 'selected' : '' ?>>
-                                            <?= esc($sector['nombre']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Referencia del predio</label>
-                                <input type="text" class="form-control" name="referencia" maxlength="150"
-                                       value="<?= esc(old('referencia')) ?>"
-                                       placeholder="Ej. Casa color celeste, 2da entrada del caserio">
-                                <small class="text-xs text-secondary">Opcional, ayuda a ubicar el predio en campo.</small>
-                            </div>
-
-                            <hr class="horizontal dark">
+                                <hr class="horizontal dark">
+                            <?php endif; ?>
 
                             <div class="mb-3">
                                 <label class="form-label">Codigo del contador</label>
                                 <input type="text" class="form-control" name="numero_serie" required maxlength="30"
-                                       value="<?= esc(old('numero_serie')) ?>"
+                                       value="<?= esc(old('numero_serie', $contador['numero_serie'] ?? '')) ?>"
                                        placeholder="Ej. CTR-0456">
                                 <small class="text-xs text-secondary">Debe ser unico: identifica fisicamente al contador.</small>
                             </div>
@@ -92,17 +114,19 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Lectura inicial</label>
                                     <input type="number" step="0.01" min="0" class="form-control" name="lectura_inicial"
-                                           value="<?= esc(old('lectura_inicial', '0')) ?>">
+                                           value="<?= esc(old('lectura_inicial', $contador['lectura_inicial'] ?? '0')) ?>">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Fecha de instalacion</label>
                                     <input type="date" class="form-control" name="fecha_instalacion"
-                                           value="<?= esc(old('fecha_instalacion', date('Y-m-d'))) ?>">
+                                           value="<?= esc(old('fecha_instalacion', $contador['fecha_instalacion'] ?? date('Y-m-d'))) ?>">
                                 </div>
                             </div>
 
                             <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary mb-0">Guardar contador</button>
+                                <button type="submit" class="btn btn-primary mb-0">
+                                    <?= $esEdicion ? 'Guardar cambios' : 'Guardar contador' ?>
+                                </button>
                                 <a href="<?= base_url('contadores') ?>" class="btn btn-outline-secondary mb-0">Cancelar</a>
                             </div>
                         </form>

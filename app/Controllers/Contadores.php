@@ -36,10 +36,11 @@ class Contadores extends BaseController
     /**
      * Formulario para registrar un nuevo contador/predio.
      */
-    public function nuevo()
+        public function nuevo()
     {
         return view('contadores/form', [
             'title'    => 'Nuevo contador',
+            'contador' => null,
             'clientes' => $this->clientes->where('activo', 1)->orderBy('nombre', 'ASC')->findAll(),
             'sectores' => $this->sectores->where('activo', 1)->orderBy('nombre', 'ASC')->findAll(),
         ]);
@@ -115,6 +116,130 @@ class Contadores extends BaseController
         return redirect()->to('/contadores')
             ->with('exito', 'Contador "' . esc($numeroSerie) . '" registrado y asociado correctamente.');
     }
+
+        /**
+     * Formulario para editar un contador existente. (HU-11)
+     */
+    public function editar($id = null)
+    {
+        $contador = $this->contadores->obtenerConDetalle((int) $id);
+
+        if (! $contador) {
+            return redirect()->to('/contadores')->with('errores', ['Ese contador no existe.']);
+        }
+
+        return view('contadores/form', [
+            'title'    => 'Editar contador',
+            'contador' => $contador,
+        ]);
+    }
+
+    /**
+     * Procesa la edicion de un contador. (HU-11)
+     * Solo permite ajustar datos propios del contador (codigo, lectura,
+     * fecha de instalacion); el predio/cliente se define al registrarlo.
+     */
+    public function actualizar($id = null)
+    {
+        $id       = (int) $id;
+        $contador = $this->contadores->find($id);
+
+        if (! $contador) {
+            return redirect()->to('/contadores')->with('errores', ['Ese contador no existe.']);
+        }
+
+        $reglas = [
+            'id'           => 'permit_empty|is_natural_no_zero',
+            'numero_serie' => [
+                'rules'  => 'required|max_length[30]|is_unique[contadores.numero_serie,id,{id}]',
+                'errors' => [
+                    'required'   => 'El codigo del contador es obligatorio.',
+                    'max_length' => 'El codigo del contador es demasiado largo (max. 30 caracteres).',
+                    'is_unique'  => 'Ya existe un contador registrado con ese codigo.',
+                ],
+            ],
+            'lectura_inicial' => [
+                'rules'  => 'permit_empty|decimal',
+                'errors' => [
+                    'decimal' => 'La lectura inicial debe ser un numero valido.',
+                ],
+            ],
+            'fecha_instalacion' => [
+                'rules'  => 'permit_empty|valid_date',
+                'errors' => [
+                    'valid_date' => 'Ingresa una fecha valida.',
+                ],
+            ],
+        ];
+
+        if (! $this->validate($reglas)) {
+            return redirect()->back()->withInput()
+                ->with('errores', $this->validator->getErrors());
+        }
+
+        $numeroSerie = trim((string) $this->request->getPost('numero_serie'));
+
+        $datos = [
+            'id'                => $id,
+            'numero_serie'      => $numeroSerie,
+            'lectura_inicial'   => $this->request->getPost('lectura_inicial') ?: 0,
+            'fecha_instalacion' => trim((string) $this->request->getPost('fecha_instalacion')) ?: null,
+        ];
+
+        if (! $this->contadores->update($id, $datos)) {
+            return redirect()->back()->withInput()
+                ->with('errores', $this->contadores->errors());
+        }
+
+        return redirect()->to('/contadores')
+            ->with('exito', 'Contador "' . esc($numeroSerie) . '" actualizado correctamente.');
+    }
+
+    /**
+     * Desactiva un contador (baja de servicio o cambio de contador). (HU-11)
+     * Criterio: un contador inactivo no aparece en la lista de pendientes
+     * de lectura del lector (ver ContadorModel::listarActivosParaLectura()).
+     */
+    public function desactivar($id = null)
+    {
+        $id       = (int) $id;
+        $contador = $this->contadores->find($id);
+
+        if (! $contador) {
+            return redirect()->to('/contadores')->with('errores', ['Ese contador no existe.']);
+        }
+
+        $this->contadores->update($id, [
+            'activo'       => 0,
+            'fecha_retiro' => date('Y-m-d'),
+        ]);
+
+        return redirect()->to('/contadores')
+            ->with('exito', 'Contador "' . esc($contador['numero_serie']) . '" desactivado correctamente.');
+    }
+
+    /**
+     * Reactiva un contador previamente desactivado. (HU-11)
+     */
+    public function activar($id = null)
+    {
+        $id       = (int) $id;
+        $contador = $this->contadores->find($id);
+
+        if (! $contador) {
+            return redirect()->to('/contadores')->with('errores', ['Ese contador no existe.']);
+        }
+
+        $this->contadores->update($id, [
+            'activo'       => 1,
+            'fecha_retiro' => null,
+        ]);
+
+        return redirect()->to('/contadores')
+            ->with('exito', 'Contador "' . esc($contador['numero_serie']) . '" activado correctamente.');
+    }
+
+        
 
 
         private function reglasValidacion(): array
