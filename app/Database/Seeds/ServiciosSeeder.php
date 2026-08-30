@@ -30,6 +30,13 @@ class ServiciosSeeder extends Seeder
 
         $ahora = date('Y-m-d H:i:s');
 
+        // Indice nombre -> id, para asignar el sector que corresponde a la
+        // direccion del cliente en vez de uno arbitrario.
+        $sectorPorNombre = [];
+        foreach ($sectores as $sector) {
+            $sectorPorNombre[$sector['nombre']] = $sector['id'];
+        }
+
         foreach ($clientes as $i => $cliente) {
             $codigo = 'SRV-' . str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT);
 
@@ -41,13 +48,18 @@ class ServiciosSeeder extends Seeder
                 continue;
             }
 
+            // La direccion del cliente es "<Sector>, Jutiapa": tomamos la
+            // primera parte para que el sector y la direccion coincidan.
+            $nombreSector = trim(explode(',', (string) $cliente['direccion'])[0]);
+            $sectorId     = $sectorPorNombre[$nombreSector] ?? $sectores[0]['id'];
+
             // Un par de servicios suspendidos, para verificar que la lista
             // de pendientes de lectura los excluye. (HU-12)
             $estado = ($i % 11 === 0 && $i > 0) ? 'suspendido' : 'activo';
 
             $this->db->table('servicios')->insert([
                 'cliente_id' => $cliente['id'],
-                'sector_id'  => $sectores[$i % count($sectores)]['id'],
+                'sector_id'  => $sectorId,
                 'codigo'     => $codigo,
                 'direccion'  => $cliente['direccion'],
                 'fecha_alta' => '2026-01-15',
