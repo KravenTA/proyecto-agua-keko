@@ -44,3 +44,6 @@ $routes->group('contadores', static function ($routes) {
     $routes->get('nuevo', 'Contadores::nuevo');
     $routes->post('/', 'Contadores::crear');
 });
+
+// HU-12: Contadores pendientes de lectura del periodo (SDGODA-27)
+$routes->get('lecturas/pendientes', 'Lecturas::pendientes');
