@@ -48,6 +48,9 @@
                         <form method="post" action="<?= $accion ?>">
                             <?= csrf_field() ?>
 
+                            <?php if ($esEdicion) : ?>
+                            <input type="hidden" name="id" value="<?= esc($contador['id']) ?>">
+                            <?php endif; ?>
                             <?php if (! $esEdicion) : ?>
                                 <div class="mb-3">
                                     <label class="form-label">Cliente asociado</label>
