@@ -14,8 +14,9 @@ class ContadorModel extends Model
     protected $updatedField  = 'updated_at';
 
     protected $validationRules = [
+        'id'           => 'permit_empty|is_natural_no_zero',
         'servicio_id'  => 'required|is_natural_no_zero',
-        'numero_serie' => 'required|is_unique[contadores.numero_serie]|max_length[30]',
+        'numero_serie' => 'required|is_unique[contadores.numero_serie,id,{id}]|max_length[30]',
     ];
 
     protected $validationMessages = [
@@ -28,7 +29,6 @@ class ContadorModel extends Model
         ],
     ];
 
-    
     public function listarConDetalle(): array
     {
         return $this->select('
@@ -50,7 +50,7 @@ class ContadorModel extends Model
             ->findAll();
     }
 
-        /**
+    /**
      * Contadores pendientes de lectura del periodo indicado. (HU-12)
      *
      * Un contador esta pendiente si:
@@ -102,6 +102,42 @@ class ContadorModel extends Model
         }
 
         return $builder->orderBy('sectores.nombre', 'ASC')
+            ->orderBy('contadores.numero_serie', 'ASC')
+            ->findAll();
+    }
+
+    /**
+     * Un contador con el nombre de su cliente y referencia del predio,
+     * para mostrarlos (solo lectura) en el formulario de edicion. (HU-11)
+     */
+    public function obtenerConDetalle(int $id): ?array
+    {
+        return $this->select('
+                contadores.*,
+                servicios.direccion AS referencia,
+                clientes.nombre AS cliente_nombre
+            ')
+            ->join('servicios', 'servicios.id = contadores.servicio_id')
+            ->join('clientes', 'clientes.id = servicios.cliente_id')
+            ->where('contadores.id', $id)
+            ->first();
+    }
+
+    /**
+     * Contadores activos, pendientes de lectura. (HU-11)
+     * Criterio: un contador inactivo no debe aparecer en esta lista.
+     */
+    public function listarActivosParaLectura(): array
+    {
+        return $this->select('
+                contadores.id,
+                contadores.numero_serie,
+                servicios.direccion AS referencia,
+                clientes.nombre AS cliente_nombre
+            ')
+            ->join('servicios', 'servicios.id = contadores.servicio_id')
+            ->join('clientes', 'clientes.id = servicios.cliente_id')
+            ->where('contadores.activo', 1)
             ->orderBy('contadores.numero_serie', 'ASC')
             ->findAll();
     }
