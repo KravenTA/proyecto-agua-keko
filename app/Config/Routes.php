@@ -43,7 +43,7 @@ $routes->group('contadores', static function ($routes) {
     $routes->get('/', 'Contadores::index');
     $routes->get('nuevo', 'Contadores::nuevo');
     $routes->post('/', 'Contadores::crear');
-
+    
     // HU-11: Editar, activar y desactivar un contador (SDGODA-26)
     $routes->get('editar/(:num)', 'Contadores::editar/$1');
     $routes->post('actualizar/(:num)', 'Contadores::actualizar/$1');
@@ -52,3 +52,6 @@ $routes->group('contadores', static function ($routes) {
 
 
 });
+
+// HU-12: Contadores pendientes de lectura del periodo (SDGODA-27)
+$routes->get('lecturas/pendientes', 'Lecturas::pendientes');

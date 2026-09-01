@@ -51,6 +51,62 @@ class ContadorModel extends Model
     }
 
     /**
+     * Contadores pendientes de lectura del periodo indicado. (HU-12)
+     *
+     * Un contador esta pendiente si:
+     *  - esta activo,
+     *  - su servicio (predio) esta activo,
+     *  - y no tiene una lectura registrada en ese periodo.
+     *
+     * Trae ademas la ultima lectura conocida, para que el lector sepa que
+     * valor esperar cuando llegue al predio.
+     */
+    public function pendientesDeLectura(int $periodoId, string $busqueda = ''): array
+    {
+        $builder = $this->select('
+                contadores.id,
+                contadores.numero_serie,
+                contadores.lectura_inicial,
+                servicios.id AS servicio_id,
+                servicios.codigo AS servicio_codigo,
+                servicios.direccion,
+                sectores.nombre AS sector_nombre,
+                clientes.nombre AS cliente_nombre,
+                clientes.telefono AS cliente_telefono,
+                (
+                    SELECT l.lectura_actual
+                    FROM lecturas l
+                    WHERE l.contador_id = contadores.id
+                    ORDER BY l.fecha_lectura DESC, l.id DESC
+                    LIMIT 1
+                ) AS lectura_anterior
+            ')
+            ->join('servicios', 'servicios.id = contadores.servicio_id')
+            ->join('sectores', 'sectores.id = servicios.sector_id')
+            ->join('clientes', 'clientes.id = servicios.cliente_id')
+            ->where('contadores.activo', 1)
+            ->where('servicios.estado', 'activo')
+            ->where("NOT EXISTS (
+                SELECT 1 FROM lecturas lp
+                WHERE lp.contador_id = contadores.id
+                  AND lp.periodo_id = " . $periodoId . "
+            )", null, false);
+
+        if ($busqueda !== '') {
+            $builder->groupStart()
+                ->like('contadores.numero_serie', $busqueda)
+                ->orLike('clientes.nombre', $busqueda)
+                ->orLike('servicios.direccion', $busqueda)
+                ->orLike('sectores.nombre', $busqueda)
+                ->groupEnd();
+        }
+
+        return $builder->orderBy('sectores.nombre', 'ASC')
+            ->orderBy('contadores.numero_serie', 'ASC')
+            ->findAll();
+    }
+
+    /**
      * Un contador con el nombre de su cliente y referencia del predio,
      * para mostrarlos (solo lectura) en el formulario de edicion. (HU-11)
      */

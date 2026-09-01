@@ -49,6 +49,18 @@
                 </li>
             <?php endif; ?>
 
+            <?php if (in_array(session()->get('rol_nombre'), ['Administrador', 'Lector'], true)) : ?>
+    <li class="nav-item">
+        <a class="nav-link <?= url_is('lecturas*') ? 'active' : '' ?>"
+           href="<?= base_url('lecturas/pendientes') ?>">
+            <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="ni ni-bullet-list-67 text-primary text-sm opacity-10"></i>
+            </div>
+            <span class="nav-link-text ms-1">Pendientes</span>
+        </a>
+    </li>
+<?php endif; ?>
+
             <?php /*
                 Modulos pendientes. Cada equipo descomenta el suyo cuando lo implemente:
                 Tarifas (ni-money-coins), Lecturas (ni-bullet-list-67), Pagos (ni-chart-bar-32)
