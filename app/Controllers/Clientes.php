@@ -15,42 +15,12 @@ class Clientes extends BaseController
 
     public function index()
     {
-        $termino = trim((string) $this->request->getGet('q'));
-        $activo  = (string) ($this->request->getGet('activo') ?? '');
-
-        $clientes = $this->clientes->buscar($termino, $activo)->paginate(10);
-
         return view('clientes/index', [
             'title'    => 'Clientes',
-            'clientes' => $clientes,
-            'pager'    => $this->clientes->pager,
-            'termino'  => $termino,
-            'activo'   => $activo,
+            'clientes' => $this->clientes->orderBy('nombre', 'ASC')->findAll(),
         ]);
     }
 
-    /**
-     * Devuelve solo la tabla de resultados, para actualizarla por AJAX
-     * sin recargar la pagina completa. (HU-09)
-     */
-    public function tabla()
-    {
-        $termino = trim((string) $this->request->getGet('q'));
-        $activo  = (string) ($this->request->getGet('activo') ?? '');
-
-        $clientes = $this->clientes->buscar($termino, $activo)->paginate(10);
-
-        return view('clientes/_tabla', [
-            'clientes' => $clientes,
-            'pager'    => $this->clientes->pager,
-            'termino'  => $termino,
-            'activo'   => $activo,
-        ]);
-    }
-
-    /**
-     * Formulario para registrar un nuevo cliente.
-     */
     public function nuevo()
     {
         return view('clientes/form', [
@@ -59,9 +29,6 @@ class Clientes extends BaseController
         ]);
     }
 
-    /**
-     * Procesa el registro de un nuevo cliente. (HU-07)
-     */
     public function crear()
     {
         $reglas = $this->reglasValidacion();
@@ -76,8 +43,19 @@ class Clientes extends BaseController
             'telefono'  => trim((string) $this->request->getPost('telefono')),
             'direccion' => trim((string) $this->request->getPost('direccion')),
             'email'     => trim((string) $this->request->getPost('email')) ?: null,
+            'dpi'       => trim((string) $this->request->getPost('dpi')) ?: null,
             'activo'    => 1,
         ];
+
+        $rutaFoto  = $this->guardarArchivo('foto_vivienda');
+        $rutaRecibo = $this->guardarArchivo('recibo_luz');
+
+        if ($rutaFoto !== null) {
+            $datos['foto_vivienda'] = $rutaFoto;
+        }
+        if ($rutaRecibo !== null) {
+            $datos['recibo_luz'] = $rutaRecibo;
+        }
 
         if (! $this->clientes->insert($datos)) {
             return redirect()->back()->withInput()
@@ -88,9 +66,6 @@ class Clientes extends BaseController
             ->with('exito', 'Cliente "' . esc($datos['nombre']) . '" registrado correctamente.');
     }
 
-    /**
-     * Formulario para editar un cliente existente. (HU-08)
-     */
     public function editar($id = null)
     {
         $cliente = $this->clientes->find((int) $id);
@@ -105,10 +80,6 @@ class Clientes extends BaseController
         ]);
     }
 
-    /**
-     * Procesa la edicion de un cliente. (HU-08)
-     * Criterio: la edicion refleja cambios inmediatos.
-     */
     public function actualizar($id = null)
     {
         $id      = (int) $id;
@@ -130,7 +101,18 @@ class Clientes extends BaseController
             'telefono'  => trim((string) $this->request->getPost('telefono')),
             'direccion' => trim((string) $this->request->getPost('direccion')),
             'email'     => trim((string) $this->request->getPost('email')) ?: null,
+            'dpi'       => trim((string) $this->request->getPost('dpi')) ?: null,
         ];
+
+        $rutaFoto   = $this->guardarArchivo('foto_vivienda');
+        $rutaRecibo = $this->guardarArchivo('recibo_luz');
+
+        if ($rutaFoto !== null) {
+            $datos['foto_vivienda'] = $rutaFoto;
+        }
+        if ($rutaRecibo !== null) {
+            $datos['recibo_luz'] = $rutaRecibo;
+        }
 
         if (! $this->clientes->update($id, $datos)) {
             return redirect()->back()->withInput()
@@ -141,10 +123,6 @@ class Clientes extends BaseController
             ->with('exito', 'Cliente "' . esc($datos['nombre']) . '" actualizado correctamente.');
     }
 
-    /**
-     * Desactiva ("elimina") un cliente. (HU-08)
-     * Criterio: no permite eliminar cliente con contadores activos.
-     */
     public function eliminar($id = null)
     {
         $id      = (int) $id;
@@ -166,9 +144,6 @@ class Clientes extends BaseController
             ->with('exito', 'Cliente "' . esc($cliente['nombre']) . '" desactivado correctamente.');
     }
 
-    /**
-     * Reactiva un cliente previamente desactivado.
-     */
     public function activar($id = null)
     {
         $id      = (int) $id;
@@ -182,6 +157,30 @@ class Clientes extends BaseController
 
         return redirect()->to('/clientes')
             ->with('exito', 'Cliente "' . esc($cliente['nombre']) . '" activado correctamente.');
+    }
+
+    /**
+     * Guarda un archivo subido (imagen o PDF) en public/uploads/clientes/
+     * y devuelve la ruta relativa a guardar en BD, o null si no se subió nada.
+     */
+    private function guardarArchivo(string $campo): ?string
+    {
+        $archivo = $this->request->getFile($campo);
+
+        if ($archivo === null || ! $archivo->isValid() || $archivo->hasMoved()) {
+            return null;
+        }
+
+        $carpeta = ROOTPATH . 'public/uploads/clientes/';
+
+        if (! is_dir($carpeta)) {
+            mkdir($carpeta, 0755, true);
+        }
+
+        $nombreNuevo = $archivo->getRandomName();
+        $archivo->move($carpeta, $nombreNuevo);
+
+        return 'uploads/clientes/' . $nombreNuevo;
     }
 
     private function reglasValidacion(): array
@@ -212,6 +211,23 @@ class Clientes extends BaseController
                 'rules'  => 'permit_empty|valid_email|max_length[150]',
                 'errors' => [
                     'valid_email' => 'Ingresa un correo electronico valido.',
+                ],
+            ],
+            'dpi' => [
+                'rules'  => 'permit_empty|max_length[20]',
+            ],
+            'foto_vivienda' => [
+                'rules'  => 'permit_empty|is_image[foto_vivienda]|max_size[foto_vivienda,2048]',
+                'errors' => [
+                    'is_image' => 'La foto de la vivienda debe ser una imagen valida.',
+                    'max_size' => 'La foto de la vivienda no puede pesar mas de 2MB.',
+                ],
+            ],
+            'recibo_luz' => [
+                'rules'  => 'permit_empty|max_size[recibo_luz,2048]|ext_in[recibo_luz,jpg,jpeg,png,pdf]',
+                'errors' => [
+                    'max_size' => 'El recibo de luz no puede pesar mas de 2MB.',
+                    'ext_in'   => 'El recibo de luz debe ser imagen (jpg/png) o PDF.',
                 ],
             ],
         ];
