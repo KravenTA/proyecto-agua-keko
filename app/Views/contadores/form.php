@@ -115,6 +115,19 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
+                                    <label class="form-label">Tipo de servicio (opcional)</label>
+                                    <?php $tipoServicioActual = old('tipo_servicio', $contador['tipo_servicio'] ?? ''); ?>
+                                    <select class="form-control" name="tipo_servicio">
+                                        <option value="">Sin especificar</option>
+                                        <option value="cuarto_paja" <?= $tipoServicioActual === 'cuarto_paja' ? 'selected' : '' ?>>Cuarto de paja</option>
+                                        <option value="media_paja" <?= $tipoServicioActual === 'media_paja' ? 'selected' : '' ?>>Media paja</option>
+                                        <option value="paja_completa" <?= $tipoServicioActual === 'paja_completa' ? 'selected' : '' ?>>Paja completa</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
                                     <label class="form-label">Lectura inicial</label>
                                     <input type="number" step="0.01" min="0" class="form-control" name="lectura_inicial"
                                            value="<?= esc(old('lectura_inicial', $contador['lectura_inicial'] ?? '0')) ?>">

@@ -36,7 +36,7 @@ class Contadores extends BaseController
     /**
      * Formulario para registrar un nuevo contador/predio.
      */
-        public function nuevo()
+    public function nuevo()
     {
         return view('contadores/form', [
             'title'    => 'Nuevo contador',
@@ -46,7 +46,7 @@ class Contadores extends BaseController
         ]);
     }
 
-        /**
+    /**
      * Procesa el registro de un contador y del predio (servicio) que lo
      * conecta con un cliente. (HU-10)
      *
@@ -66,6 +66,7 @@ class Contadores extends BaseController
         $sectorId         = (int) $this->request->getPost('sector_id');
         $referencia       = trim((string) $this->request->getPost('referencia'));
         $numeroSerie      = trim((string) $this->request->getPost('numero_serie'));
+        $tipoServicio     = trim((string) $this->request->getPost('tipo_servicio')) ?: null;
         $lecturaInicial   = $this->request->getPost('lectura_inicial');
         $fechaInstalacion = trim((string) $this->request->getPost('fecha_instalacion')) ?: date('Y-m-d');
 
@@ -94,6 +95,7 @@ class Contadores extends BaseController
         $contadorId = $this->contadores->insert([
             'servicio_id'       => $servicioId,
             'numero_serie'      => $numeroSerie,
+            'tipo_servicio'     => $tipoServicio,
             'lectura_inicial'   => $lecturaInicial !== null && $lecturaInicial !== '' ? $lecturaInicial : 0,
             'fecha_instalacion' => $fechaInstalacion,
             'activo'            => 1,
@@ -117,7 +119,7 @@ class Contadores extends BaseController
             ->with('exito', 'Contador "' . esc($numeroSerie) . '" registrado y asociado correctamente.');
     }
 
-        /**
+    /**
      * Formulario para editar un contador existente. (HU-11)
      */
     public function editar($id = null)
@@ -158,6 +160,12 @@ class Contadores extends BaseController
                     'is_unique'  => 'Ya existe un contador registrado con ese codigo.',
                 ],
             ],
+            'tipo_servicio' => [
+                'rules'  => 'permit_empty|in_list[cuarto_paja,media_paja,paja_completa]',
+                'errors' => [
+                    'in_list' => 'Selecciona un tipo de servicio valido.',
+                ],
+            ],
             'lectura_inicial' => [
                 'rules'  => 'permit_empty|decimal',
                 'errors' => [
@@ -182,6 +190,7 @@ class Contadores extends BaseController
         $datos = [
             'id'                => $id,
             'numero_serie'      => $numeroSerie,
+            'tipo_servicio'     => trim((string) $this->request->getPost('tipo_servicio')) ?: null,
             'lectura_inicial'   => $this->request->getPost('lectura_inicial') ?: 0,
             'fecha_instalacion' => trim((string) $this->request->getPost('fecha_instalacion')) ?: null,
         ];
@@ -239,10 +248,7 @@ class Contadores extends BaseController
             ->with('exito', 'Contador "' . esc($contador['numero_serie']) . '" activado correctamente.');
     }
 
-        
-
-
-        private function reglasValidacion(): array
+    private function reglasValidacion(): array
     {
         return [
             'cliente_id' => [
@@ -273,6 +279,12 @@ class Contadores extends BaseController
                     'required'   => 'El codigo del contador es obligatorio.',
                     'max_length' => 'El codigo del contador es demasiado largo (max. 30 caracteres).',
                     'is_unique'  => 'Ya existe un contador registrado con ese codigo.',
+                ],
+            ],
+            'tipo_servicio' => [
+                'rules'  => 'permit_empty|in_list[cuarto_paja,media_paja,paja_completa]',
+                'errors' => [
+                    'in_list' => 'Selecciona un tipo de servicio valido.',
                 ],
             ],
             'lectura_inicial' => [

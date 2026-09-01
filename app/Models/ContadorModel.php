@@ -8,8 +8,7 @@ class ContadorModel extends Model
 {
     protected $table         = 'contadores';
     protected $primaryKey    = 'id';
-    protected $allowedFields = ['servicio_id', 'numero_serie', 'lectura_inicial', 'fecha_instalacion', 'fecha_retiro', 'activo'];
-    protected $useTimestamps = true;
+    protected $allowedFields = ['servicio_id', 'numero_serie', 'tipo_servicio', 'lectura_inicial', 'fecha_instalacion', 'fecha_retiro', 'activo'];    protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
 
