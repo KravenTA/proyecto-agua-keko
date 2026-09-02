@@ -8,7 +8,10 @@ class ClienteModel extends Model
 {
     protected $table         = 'clientes';
     protected $primaryKey    = 'id';
-    protected $allowedFields = ['nombre', 'telefono', 'direccion', 'email', 'activo', 'observaciones'];
+    protected $allowedFields = [
+        'nombre', 'telefono', 'direccion', 'email', 'activo', 'observaciones',
+        'dpi', 'foto_vivienda', 'recibo_luz',
+    ];
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
@@ -33,7 +36,7 @@ class ClienteModel extends Model
 
         return $this->orderBy('nombre', 'ASC');
     }
-    
+
     /**
      * Verifica si el cliente tiene al menos un contador activo asociado
      * (a traves de sus servicios). Se usa para bloquear la desactivacion. (HU-08)

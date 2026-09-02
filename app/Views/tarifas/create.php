@@ -40,9 +40,37 @@
                             <?= csrf_field() ?>
 
                             <div class="mb-3">
-                                <label class="form-label ms-1">Precio por unidad (Q)</label>
+                                <label class="form-label ms-1">Tipo de tarifa</label>
+                                <?php $tipoActual = old('tipo'); ?>
+                                <select class="form-control" name="tipo" id="tipoTarifa" required>
+                                    <option value="">Elige un tipo</option>
+                                    <?php foreach ($tipos as $t) : ?>
+                                        <option value="<?= esc($t) ?>" <?= $tipoActual === $t ? 'selected' : '' ?>>
+                                            <?= esc(ucwords(str_replace('_', ' ', $t))) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="grupoVolumen">
+                                <label class="form-label ms-1">Volumen incluido (litros)</label>
+                                <input type="number" min="0" name="volumen_incluido_litros"
+                                       class="form-control" value="<?= old('volumen_incluido_litros') ?>"
+                                       placeholder="Ej. 15000">
+                                <small class="text-muted ms-1">
+                                    No aplica para el tipo "Exceso" (se cobra desde el primer litro que se pase).
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label ms-1">
+                                    Precio por unidad (Q) <span id="labelUnidad">por unidad</span>
+                                </label>
                                 <input type="number" step="0.01" min="0.01" name="precio_unitario"
                                        class="form-control" value="<?= old('precio_unitario') ?>" required>
+                                <small class="text-muted ms-1">
+                                    Para "Exceso", este precio es por metro cúbico (1,000 litros) que se pase del volumen incluido.
+                                </small>
                             </div>
 
                             <div class="mb-3">
@@ -72,5 +100,26 @@
         </div>
     </div>
 </main>
+
+<script>
+    // Oculta el campo de volumen incluido cuando el tipo es "exceso",
+    // porque el exceso no tiene volumen incluido por definicion.
+    const selectTipo = document.getElementById('tipoTarifa');
+    const grupoVolumen = document.getElementById('grupoVolumen');
+    const labelUnidad = document.getElementById('labelUnidad');
+
+    function actualizarVisibilidad() {
+        if (selectTipo.value === 'exceso') {
+            grupoVolumen.style.display = 'none';
+            labelUnidad.textContent = 'por m³ de exceso';
+        } else {
+            grupoVolumen.style.display = 'block';
+            labelUnidad.textContent = 'por unidad';
+        }
+    }
+
+    selectTipo.addEventListener('change', actualizarVisibilidad);
+    actualizarVisibilidad();
+</script>
 
 <?= view('layouts/footer') ?>

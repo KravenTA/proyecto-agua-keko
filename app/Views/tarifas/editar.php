@@ -29,12 +29,22 @@
                         <?php endif; ?>
 
                         <p class="text-muted ms-1">
+                            Tipo: <strong><?= esc(ucwords(str_replace('_', ' ', $tarifa['tipo'] ?? '—'))) ?></strong>
+                            &nbsp;·&nbsp;
                             Vigente desde: <?= esc($tarifa['vigente_desde']) ?>
-                            (la fecha de inicio no se puede modificar aquí)
+                            <br>(el tipo y la fecha de inicio no se pueden modificar aquí)
                         </p>
 
                         <form action="<?= base_url('tarifas/actualizar/' . $tarifa['id']) ?>" method="post">
                             <?= csrf_field() ?>
+
+                            <?php if (($tarifa['tipo'] ?? '') !== 'exceso') : ?>
+                                <div class="mb-3">
+                                    <label class="form-label ms-1">Volumen incluido (litros)</label>
+                                    <input type="number" min="0" name="volumen_incluido_litros"
+                                           class="form-control" value="<?= old('volumen_incluido_litros', $tarifa['volumen_incluido_litros']) ?>">
+                                </div>
+                            <?php endif; ?>
 
                             <div class="mb-3">
                                 <label class="form-label ms-1">Precio por unidad (Q)</label>

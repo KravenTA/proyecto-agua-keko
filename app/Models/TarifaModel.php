@@ -8,20 +8,22 @@ class TarifaModel extends Model
 {
     protected $table            = 'tarifas';
     protected $primaryKey       = 'id';
-    protected $allowedFields    = ['precio_unitario', 'cuota_minima', 'vigente_desde', 'vigente_hasta', 'activo'];
+    protected $allowedFields    = ['tipo', 'volumen_incluido_litros', 'precio_unitario', 'cuota_minima', 'vigente_desde', 'vigente_hasta', 'activo'];
     protected $useTimestamps    = true;
     protected $createdField     = 'created_at';
     protected $updatedField     = 'updated_at';
 
     /**
-     * Busca una tarifa activa cuya vigencia se traslape con la fecha de inicio dada.
-     * Una tarifa activa "abierta" (vigente_hasta = NULL) se considera vigente
-     * indefinidamente hacia adelante, así que cualquier nueva tarifa que empiece
-     * después también se traslaparía con ella.
+     * Busca una tarifa activa DEL MISMO TIPO cuya vigencia se traslape con
+     * la fecha de inicio dada. Cada tipo (cuarto_paja, media_paja,
+     * paja_completa, exceso) tiene su propia linea de vigencias
+     * independiente -- pueden convivir 4 tarifas activas a la vez, una
+     * por tipo, pero no dos del mismo tipo traslapadas.
      */
-    public function existeTraslape(string $vigenteDesde): bool
+    public function existeTraslape(string $tipo, string $vigenteDesde): bool
     {
-        return $this->where('activo', 1)
+        return $this->where('tipo', $tipo)
+            ->where('activo', 1)
             ->groupStart()
                 ->where('vigente_hasta IS NULL')
                 ->orWhere('vigente_hasta >=', $vigenteDesde)
@@ -29,14 +31,15 @@ class TarifaModel extends Model
             ->countAllResults() > 0;
     }
 
-     /**
-     * Devuelve el historial de tarifas, ordenado por fecha de vigencia (mas reciente primero).
-     * Permite filtrar opcionalmente por un rango de fechas que se cruce con vigente_desde/vigente_hasta.
+    /**
+     * Devuelve el historial de tarifas, ordenado por tipo y luego por fecha
+     * de vigencia (mas reciente primero). Permite filtrar opcionalmente por
+     * un rango de fechas y/o por tipo.
      * (Usado por HU-05: Consultar historial de tarifas)
      */
-    public function historial(?string $desde = null, ?string $hasta = null): array
+    public function historial(?string $desde = null, ?string $hasta = null, ?string $tipo = null): array
     {
-        $builder = $this->orderBy('vigente_desde', 'DESC');
+        $builder = $this->orderBy('tipo', 'ASC')->orderBy('vigente_desde', 'DESC');
 
         if ($desde) {
             $builder->groupStart()
@@ -49,17 +52,24 @@ class TarifaModel extends Model
             $builder->where('vigente_desde <=', $hasta);
         }
 
+        if ($tipo) {
+            $builder->where('tipo', $tipo);
+        }
+
         return $builder->findAll();
     }
 
     /**
-     * Devuelve la tarifa activa vigente en la fecha dada (por defecto, hoy).
+     * Devuelve la tarifa activa vigente del tipo indicado, en la fecha dada
+     * (por defecto, hoy). Cada tipo de servicio (y el tipo "exceso") tiene
+     * su propia tarifa vigente independiente.
      */
-    public function tarifaVigente(?string $fecha = null): ?array
+    public function tarifaVigente(string $tipo, ?string $fecha = null): ?array
     {
         $fecha = $fecha ?? date('Y-m-d');
 
-        return $this->where('activo', 1)
+        return $this->where('tipo', $tipo)
+            ->where('activo', 1)
             ->where('vigente_desde <=', $fecha)
             ->groupStart()
                 ->where('vigente_hasta IS NULL')
@@ -67,5 +77,22 @@ class TarifaModel extends Model
             ->groupEnd()
             ->orderBy('vigente_desde', 'DESC')
             ->first();
+    }
+
+    /**
+     * Devuelve las tarifas vigentes de TODOS los tipos a la vez, en la
+     * fecha dada, indexadas por tipo. Util para el historial (mostrar la
+     * tarifa vigente de cada categoria) y para el calculo de lecturas.
+     */
+    public function tarifasVigentesPorTipo(?string $fecha = null): array
+    {
+        $tipos     = ['cuarto_paja', 'media_paja', 'paja_completa', 'exceso'];
+        $resultado = [];
+
+        foreach ($tipos as $tipo) {
+            $resultado[$tipo] = $this->tarifaVigente($tipo, $fecha);
+        }
+
+        return $resultado;
     }
 }

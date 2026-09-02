@@ -8,19 +8,22 @@ class AddDireccionToClientesTable extends Migration
 {
     public function up()
     {
-        $this->forge->addColumn('clientes', [
-            'direccion' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 255,
-                'null'       => true,
-                'after'      => 'telefono',
-            ],
-        ]);
+        if (! $this->db->fieldExists('direccion', 'clientes')) {
+            $this->forge->addColumn('clientes', [
+                'direccion' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 255,
+                    'null'       => true,
+                    'after'      => 'telefono',
+                ],
+            ]);
+        }
     }
 
     public function down()
     {
-        $this->forge->dropColumn('clientes', 'direccion');
+        if ($this->db->fieldExists('direccion', 'clientes')) {
+            $this->forge->dropColumn('clientes', 'direccion');
+        }
     }
 }
-

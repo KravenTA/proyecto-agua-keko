@@ -37,7 +37,7 @@
                             </div>
                         <?php endif; ?>
 
-                        <form action="<?= $accion ?>" method="post">
+                        <form action="<?= $accion ?>" method="post" enctype="multipart/form-data">
                             <?= csrf_field() ?>
 
                             <div class="mb-3">
@@ -63,11 +63,42 @@
                                           placeholder="Ej. Caserio Los Cerritos, Canton Valencia, Jutiapa"><?= esc(old('direccion', $cliente['direccion'] ?? '')) ?></textarea>
                             </div>
 
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label class="form-label ms-1">Correo electronico (opcional)</label>
                                 <input type="email" name="email" class="form-control"
                                        value="<?= esc(old('email', $cliente['email'] ?? '')) ?>" maxlength="150"
                                        placeholder="Para notificaciones y recibos">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label ms-1">DPI (opcional)</label>
+                                <input type="text" name="dpi" class="form-control"
+                                       value="<?= esc(old('dpi', $cliente['dpi'] ?? '')) ?>" maxlength="20"
+                                       placeholder="Ej. 1234 56789 0101">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label ms-1">Foto de la vivienda (opcional)</label>
+                                <input type="file" name="foto_vivienda" class="form-control" accept="image/*">
+                                <?php if ($esEdicion && ! empty($cliente['foto_vivienda'])) : ?>
+                                    <small class="text-secondary">
+                                        Ya hay una foto guardada.
+                                        <a href="<?= base_url($cliente['foto_vivienda']) ?>" target="_blank">Ver actual</a>
+                                        — subir una nueva la reemplaza.
+                                    </small>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label ms-1">Recibo de luz (opcional, imagen o PDF)</label>
+                                <input type="file" name="recibo_luz" class="form-control" accept="image/*,.pdf">
+                                <?php if ($esEdicion && ! empty($cliente['recibo_luz'])) : ?>
+                                    <small class="text-secondary">
+                                        Ya hay un recibo guardado.
+                                        <a href="<?= base_url($cliente['recibo_luz']) ?>" target="_blank">Ver actual</a>
+                                        — subir uno nuevo lo reemplaza.
+                                    </small>
+                                <?php endif; ?>
                             </div>
 
                             <div class="d-flex gap-2">
