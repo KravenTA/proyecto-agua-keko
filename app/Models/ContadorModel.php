@@ -67,6 +67,7 @@ class ContadorModel extends Model
                 contadores.numero_serie,
                 contadores.lectura_inicial,
                 servicios.id AS servicio_id,
+                contadores.tipo_servicio,
                 servicios.codigo AS servicio_codigo,
                 servicios.direccion,
                 sectores.nombre AS sector_nombre,
@@ -139,5 +140,23 @@ class ContadorModel extends Model
             ->where('contadores.activo', 1)
             ->orderBy('contadores.numero_serie', 'ASC')
             ->findAll();
+    }
+
+    /**
+     * Un contador puntual, solo si esta pendiente de lectura en el periodo
+     * indicado. Devuelve null si ya tiene lectura, esta inactivo o su
+     * servicio no esta activo. (HU-14)
+     */
+    public function obtenerParaLectura(int $id, int $periodoId): ?array
+    {
+        $resultados = $this->pendientesDeLectura($periodoId);
+
+        foreach ($resultados as $contador) {
+            if ((int) $contador['id'] === $id) {
+                return $contador;
+            }
+        }
+
+        return null;
     }
 }
