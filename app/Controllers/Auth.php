@@ -63,10 +63,6 @@ class Auth extends BaseController
     }
 
     /**
-     * Cierra la sesión del usuario y destruye todos los datos guardados
-     * por Auth::login() (usuario_id, usuario_nombre, rol_id, rol_nombre, isLoggedIn).
-     */
-        /**
      * Cierra la sesión del usuario, eliminando las claves guardadas
      * por Auth::login() (usuario_id, usuario_nombre, rol_id, rol_nombre, isLoggedIn).
      */
