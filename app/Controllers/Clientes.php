@@ -15,12 +15,42 @@ class Clientes extends BaseController
 
     public function index()
     {
+        $termino = trim((string) $this->request->getGet('q'));
+        $activo  = (string) ($this->request->getGet('activo') ?? '');
+
+        $clientes = $this->clientes->buscar($termino, $activo)->paginate(10);
+
         return view('clientes/index', [
             'title'    => 'Clientes',
-            'clientes' => $this->clientes->orderBy('nombre', 'ASC')->findAll(),
+            'clientes' => $clientes,
+            'pager'    => $this->clientes->pager,
+            'termino'  => $termino,
+            'activo'   => $activo,
         ]);
     }
 
+    /**
+     * Devuelve solo la tabla de resultados, para actualizarla por AJAX
+     * sin recargar la pagina completa. (HU-09)
+     */
+    public function tabla()
+    {
+        $termino = trim((string) $this->request->getGet('q'));
+        $activo  = (string) ($this->request->getGet('activo') ?? '');
+
+        $clientes = $this->clientes->buscar($termino, $activo)->paginate(10);
+
+        return view('clientes/_tabla', [
+            'clientes' => $clientes,
+            'pager'    => $this->clientes->pager,
+            'termino'  => $termino,
+            'activo'   => $activo,
+        ]);
+    }
+
+    /**
+     * Formulario para registrar un nuevo cliente.
+     */
     public function nuevo()
     {
         return view('clientes/form', [
@@ -29,6 +59,9 @@ class Clientes extends BaseController
         ]);
     }
 
+    /**
+     * Procesa el registro de un nuevo cliente. (HU-07)
+     */
     public function crear()
     {
         $reglas = $this->reglasValidacion();
@@ -47,7 +80,7 @@ class Clientes extends BaseController
             'activo'    => 1,
         ];
 
-        $rutaFoto  = $this->guardarArchivo('foto_vivienda');
+        $rutaFoto   = $this->guardarArchivo('foto_vivienda');
         $rutaRecibo = $this->guardarArchivo('recibo_luz');
 
         if ($rutaFoto !== null) {
@@ -66,6 +99,9 @@ class Clientes extends BaseController
             ->with('exito', 'Cliente "' . esc($datos['nombre']) . '" registrado correctamente.');
     }
 
+    /**
+     * Formulario para editar un cliente existente. (HU-08)
+     */
     public function editar($id = null)
     {
         $cliente = $this->clientes->find((int) $id);
@@ -80,6 +116,10 @@ class Clientes extends BaseController
         ]);
     }
 
+    /**
+     * Procesa la edicion de un cliente. (HU-08)
+     * Criterio: la edicion refleja cambios inmediatos.
+     */
     public function actualizar($id = null)
     {
         $id      = (int) $id;
@@ -123,6 +163,10 @@ class Clientes extends BaseController
             ->with('exito', 'Cliente "' . esc($datos['nombre']) . '" actualizado correctamente.');
     }
 
+    /**
+     * Desactiva ("elimina") un cliente. (HU-08)
+     * Criterio: no permite eliminar cliente con contadores activos.
+     */
     public function eliminar($id = null)
     {
         $id      = (int) $id;
@@ -144,6 +188,9 @@ class Clientes extends BaseController
             ->with('exito', 'Cliente "' . esc($cliente['nombre']) . '" desactivado correctamente.');
     }
 
+    /**
+     * Reactiva un cliente previamente desactivado.
+     */
     public function activar($id = null)
     {
         $id      = (int) $id;
@@ -161,7 +208,7 @@ class Clientes extends BaseController
 
     /**
      * Guarda un archivo subido (imagen o PDF) en public/uploads/clientes/
-     * y devuelve la ruta relativa a guardar en BD, o null si no se subió nada.
+     * y devuelve la ruta relativa a guardar en BD, o null si no se subio nada.
      */
     private function guardarArchivo(string $campo): ?string
     {
@@ -214,7 +261,7 @@ class Clientes extends BaseController
                 ],
             ],
             'dpi' => [
-                'rules'  => 'permit_empty|max_length[20]',
+                'rules' => 'permit_empty|max_length[20]',
             ],
             'foto_vivienda' => [
                 'rules'  => 'permit_empty|is_image[foto_vivienda]|max_size[foto_vivienda,2048]',

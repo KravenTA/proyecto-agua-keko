@@ -6,6 +6,7 @@
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Telefono</th>
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Direccion</th>
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Correo</th>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Docs</th>
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Estado</th>
                 <th class="text-secondary opacity-7"></th>
             </tr>
@@ -13,7 +14,7 @@
         <tbody>
             <?php if (empty($clientes)) : ?>
                 <tr>
-                    <td colspan="6" class="text-center text-sm text-secondary py-4">
+                    <td colspan="7" class="text-center text-sm text-secondary py-4">
                         <?= ($termino !== '' || $activo !== '')
                             ? 'No hay clientes que coincidan con la busqueda.'
                             : 'Aun no hay clientes registrados.' ?>
@@ -27,6 +28,20 @@
                     <td><span class="text-sm text-secondary"><?= esc($c['telefono']) ?></span></td>
                     <td><span class="text-sm text-secondary"><?= esc($c['direccion'] ?? '-') ?></span></td>
                     <td><span class="text-sm text-secondary"><?= esc($c['email'] ?? '-') ?></span></td>
+                    <td>
+                        <?php if (! empty($c['foto_vivienda'])) : ?>
+                            <a href="<?= base_url($c['foto_vivienda']) ?>" target="_blank" class="text-sm">Foto</a>
+                        <?php endif; ?>
+                        <?php if (! empty($c['foto_vivienda']) && ! empty($c['recibo_luz'])) : ?>
+                            <span class="text-sm text-secondary"> · </span>
+                        <?php endif; ?>
+                        <?php if (! empty($c['recibo_luz'])) : ?>
+                            <a href="<?= base_url($c['recibo_luz']) ?>" target="_blank" class="text-sm">Recibo</a>
+                        <?php endif; ?>
+                        <?php if (empty($c['foto_vivienda']) && empty($c['recibo_luz'])) : ?>
+                            <span class="text-sm text-secondary">-</span>
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <?php if ((int) $c['activo'] === 1) : ?>
                             <span class="badge badge-sm bg-gradient-success">Activo</span>
