@@ -26,6 +26,9 @@ class ContadoresSeeder extends Seeder
 
         foreach ($servicios as $i => $servicio) {
             $numeroSerie = 'CTR-' . str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT);
+            // Repartimos los tipos de paja para tener variedad en las pruebas.
+            $tipos = ['cuarto_paja', 'media_paja', 'paja_completa'];
+            $tipoServicio = $tipos[$i % count($tipos)];
 
             $existe = $this->db->table('contadores')
                 ->where('numero_serie', $numeroSerie)
@@ -41,6 +44,7 @@ class ContadoresSeeder extends Seeder
                 'servicio_id'       => $servicio['id'],
                 'numero_serie'      => $numeroSerie,
                 'lectura_inicial'   => 0,
+                'tipo_servicio'     => $tipoServicio,
                 'fecha_instalacion' => '2026-01-20',
                 'fecha_retiro'      => $inactivo ? '2026-06-30' : null,
                 'activo'            => $inactivo ? 0 : 1,
