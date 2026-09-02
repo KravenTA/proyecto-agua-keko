@@ -95,4 +95,38 @@ class TarifaModel extends Model
 
         return $resultado;
     }
+
+    /**
+     * Calcula el monto a cobrar por un consumo, segun la tarifa del tipo de
+     * paja del contador. (HU-15)
+     *
+     * Regla acordada:
+     *  - Si el consumo entra en el volumen incluido, se cobra la cuota minima.
+     *  - Si lo excede, se cobra la cuota minima mas el excedente al precio
+     *    unitario de la tarifa de tipo 'exceso'.
+     *
+     * El consumo llega en metros cubicos; volumen_incluido_litros esta en
+     * litros, por eso la conversion.
+     *
+     * Devuelve null si falta la tarifa del tipo o la de exceso.
+     */
+    public function calcularMonto(array $tarifa, float $consumoM3, ?string $fecha = null): ?float
+    {
+        $incluidoM3 = ((float) $tarifa['volumen_incluido_litros']) / 1000;
+        $cuota      = (float) $tarifa['cuota_minima'];
+
+        if ($consumoM3 <= $incluidoM3) {
+            return round($cuota, 2);
+        }
+
+        $tarifaExceso = $this->tarifaVigente('exceso', $fecha);
+
+        if (! $tarifaExceso) {
+            return null;
+        }
+
+        $excedenteM3 = $consumoM3 - $incluidoM3;
+
+        return round($cuota + ($excedenteM3 * (float) $tarifaExceso['precio_unitario']), 2);
+    }
 }
