@@ -10,7 +10,8 @@ class LecturaModel extends Model
     protected $primaryKey    = 'id';
     protected $allowedFields = [
         'servicio_id', 'contador_id', 'periodo_id', 'tarifa_id',
-        'lector_usuario_id', 'lectura_anterior', 'lectura_actual', 'fecha_lectura',
+        'lector_usuario_id', 'lectura_anterior', 'lectura_actual',
+        'consumo', 'monto', 'fecha_lectura',
     ];
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';

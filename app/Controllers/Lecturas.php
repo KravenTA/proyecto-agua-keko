@@ -10,6 +10,7 @@ use App\Models\TarifaModel;
 /**
  * HU-12: Ver contadores pendientes de lectura del periodo (SDGODA-27).
  * HU-14: Ingresar lectura de contador desde celular (SDGODA-37).
+ * HU-15: Calcular consumo y aplicar tarifa vigente (SDGODA-38).
  */
 class Lecturas extends BaseController
 {
@@ -81,11 +82,11 @@ class Lecturas extends BaseController
     }
 
     /**
-     * Guarda la lectura ingresada por el lector. (HU-14)
+     * Guarda la lectura ingresada por el lector, calculando el consumo y el
+     * monto con la tarifa vigente. (HU-14 / HU-15)
      *
-     * El calculo de consumo y monto corresponde a HU-15; aqui solo se
-     * registra la lectura y la tarifa vigente que le aplica, para que
-     * el calculo posterior use la tarifa correcta a la fecha.
+     * La tarifa se guarda en la lectura para que el recibo siga apuntando a
+     * la que se aplico, aunque despues se cierre su vigencia.
      */
     public function guardar($contadorId = null)
     {
@@ -133,6 +134,16 @@ class Lecturas extends BaseController
             ]);
         }
 
+        $consumo = $actual - $anterior;
+        $monto   = $this->tarifas->calcularMonto($tarifa, $consumo, $fecha);
+
+        if ($monto === null) {
+            return redirect()->back()->withInput()->with('errores', [
+                'El consumo excede el volumen incluido pero no hay una tarifa de exceso '
+                . 'vigente. Avisa en la oficina antes de continuar.',
+            ]);
+        }
+
         $this->lecturas->insert([
             'servicio_id'       => $contador['servicio_id'],
             'contador_id'       => $contador['id'],
@@ -141,10 +152,14 @@ class Lecturas extends BaseController
             'lector_usuario_id' => session()->get('usuario_id'),
             'lectura_anterior'  => $anterior,
             'lectura_actual'    => $actual,
+            'consumo'           => $consumo,
+            'monto'             => $monto,
             'fecha_lectura'     => $fecha,
         ]);
 
         return redirect()->to('/lecturas/pendientes')
-            ->with('exito', 'Lectura de ' . esc($contador['numero_serie']) . ' registrada.');
+            ->with('exito',
+            'Lectura de ' . esc($contador['numero_serie']) . ' registrada. '
+            . 'Consumo: ' . $consumo . ' m3 · Monto: Q' . number_format($monto, 2));
     }
 }
