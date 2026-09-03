@@ -35,6 +35,13 @@ class ContadoresSeeder extends Seeder
                 ->countAllResults();
 
             if ($existe > 0) {
+            // En bases que ya tenian contadores sembrados antes de HU-13,
+            // el tipo de servicio quedo vacio. Se completa aqui.
+                $this->db->table('contadores')
+                    ->where('numero_serie', $numeroSerie)
+                    ->where('tipo_servicio IS NULL', null, false)
+                    ->update(['tipo_servicio' => $tipoServicio]);
+
                 continue;
             }
 
