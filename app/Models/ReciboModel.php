@@ -96,4 +96,46 @@ class ReciboModel extends Model
             ->where('recibos.id', $reciboId)
             ->first();
     }
+
+    /**
+     * Recibos emitidos, con datos del cliente y periodo, para consulta desde
+     * la oficina. $filtros acepta: busqueda, periodo_id, estado.
+     */
+    public function listar(array $filtros = [])
+    {
+        $builder = $this->select('
+                recibos.id,
+                recibos.numero,
+                recibos.fecha_emision,
+                recibos.total,
+                recibos.estado,
+                clientes.nombre AS cliente_nombre,
+                contadores.numero_serie AS numero_contador,
+                periodos.anio AS periodo_anio,
+                periodos.mes AS periodo_mes
+            ')
+            ->join('lecturas', 'lecturas.id = recibos.lectura_id')
+            ->join('servicios', 'servicios.id = lecturas.servicio_id')
+            ->join('clientes', 'clientes.id = servicios.cliente_id')
+            ->join('contadores', 'contadores.id = lecturas.contador_id')
+            ->join('periodos', 'periodos.id = lecturas.periodo_id');
+
+        if (! empty($filtros['busqueda'])) {
+            $builder->groupStart()
+                ->like('recibos.numero', $filtros['busqueda'])
+                ->orLike('clientes.nombre', $filtros['busqueda'])
+                ->orLike('contadores.numero_serie', $filtros['busqueda'])
+                ->groupEnd();
+        }
+
+        if (! empty($filtros['periodo_id'])) {
+            $builder->where('lecturas.periodo_id', $filtros['periodo_id']);
+        }
+
+        if (! empty($filtros['estado'])) {
+            $builder->where('recibos.estado', $filtros['estado']);
+        }
+
+        return $builder->orderBy('recibos.id', 'DESC');
+    }
 }

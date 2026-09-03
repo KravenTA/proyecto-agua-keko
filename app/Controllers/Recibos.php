@@ -19,6 +19,45 @@ class Recibos extends BaseController
         $this->periodos = new PeriodoModel();
     }
 
+    public function index()
+    {
+        $filtros = [
+            'busqueda'   => trim((string) $this->request->getGet('q')),
+            'periodo_id' => $this->request->getGet('periodo_id') ?? '',
+            'estado'     => $this->request->getGet('estado') ?? '',
+        ];
+
+        $recibos = $this->recibos->listar($filtros)->paginate(15);
+
+        return view('recibos/index', [
+            'title'    => 'Recibos',
+            'recibos'  => $recibos,
+            'pager'    => $this->recibos->pager,
+            'periodos' => $this->periodos->listarTodos(),
+            'filtros'  => $filtros,
+        ]);
+    }
+
+    /**
+     * Devuelve solo la tabla, para actualizarla por AJAX sin recargar.
+     */
+    public function tabla()
+    {
+        $filtros = [
+            'busqueda'   => trim((string) $this->request->getGet('q')),
+            'periodo_id' => $this->request->getGet('periodo_id') ?? '',
+            'estado'     => $this->request->getGet('estado') ?? '',
+        ];
+
+        $recibos = $this->recibos->listar($filtros)->paginate(15);
+
+        return view('recibos/_tabla', [
+            'recibos' => $recibos,
+            'pager'   => $this->recibos->pager,
+            'filtros' => $filtros,
+        ]);
+    }
+
     /**
      * Recibo imprimible. Se identifica por el id del recibo, no por el de
      * la lectura, para que el numero de recibo sea el dato de referencia.

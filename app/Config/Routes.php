@@ -62,5 +62,7 @@ $routes->group('lecturas', ['filter' => 'auth'], static function ($routes) {
 
 // SDGODA-39 / SDGODA-47: Recibos emitidos
 $routes->group('recibos', ['filter' => 'auth'], static function ($routes) {
+    $routes->get('/', 'Recibos::index');
     $routes->get('ver/(:num)', 'Recibos::ver/$1');
+    $routes->get('tabla', 'Recibos::tabla');
 });
