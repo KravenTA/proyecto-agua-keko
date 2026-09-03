@@ -7,6 +7,21 @@
 
 <main class="main-content position-relative border-radius-lg">
     <div class="container-fluid py-4">
+        <?php if (session()->getFlashdata('exito')) : ?>
+            <div class="alert alert-success text-white" role="alert">
+                <?= esc(session()->getFlashdata('exito')) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('errores')) : ?>
+            <div class="alert alert-danger text-white" role="alert">
+                <ul class="mb-0 ps-3">
+                    <?php foreach ((array) session()->getFlashdata('errores') as $error) : ?>
+                        <li><?= esc($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
 
         <?php if (! $periodo) : ?>
             <div class="alert alert-warning text-white" role="alert">
@@ -88,6 +103,11 @@
                             <?php endif; ?>
                         </div>
 
+                        <a href="<?= base_url('lecturas/registrar/' . $p['id']) ?>"
+                           class="btn btn-primary btn-sm w-100 mt-3 mb-0">
+                            Registrar lectura
+                        </a>
+                        
                     </div>
                 </div>
 

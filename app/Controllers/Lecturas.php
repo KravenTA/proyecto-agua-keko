@@ -4,19 +4,26 @@ namespace App\Controllers;
 
 use App\Models\ContadorModel;
 use App\Models\PeriodoModel;
+use App\Models\LecturaModel;
+use App\Models\TarifaModel;
 
 /**
  * HU-12: Ver contadores pendientes de lectura del periodo (SDGODA-27).
+ * HU-14: Ingresar lectura de contador desde celular (SDGODA-37).
  */
 class Lecturas extends BaseController
 {
     protected ContadorModel $contadores;
     protected PeriodoModel $periodos;
+    protected LecturaModel $lecturas;
+    protected TarifaModel $tarifas;
 
     public function __construct()
     {
         $this->contadores = new ContadorModel();
         $this->periodos   = new PeriodoModel();
+        $this->lecturas   = new LecturaModel();
+        $this->tarifas    = new TarifaModel();
     }
 
     public function pendientes()
@@ -42,5 +49,102 @@ class Lecturas extends BaseController
             'pendientes' => $this->contadores->pendientesDeLectura((int) $periodo['id'], $busqueda),
             'busqueda'   => $busqueda,
         ]);
+    }
+
+    /**
+     * Formulario para ingresar la lectura de un contador. (HU-14)
+     */
+    public function registrar($contadorId = null)
+    {
+        $contadorId = (int) $contadorId;
+        $periodo    = $this->periodos->periodoActual();
+
+        if (! $periodo) {
+            return redirect()->to('/lecturas/pendientes')
+                ->with('errores', ['No hay ningun periodo abierto.']);
+        }
+
+        $contador = $this->contadores->obtenerParaLectura($contadorId, (int) $periodo['id']);
+
+        if (! $contador) {
+            return redirect()->to('/lecturas/pendientes')->with('errores', [
+                'Ese contador no esta pendiente de lectura en este periodo.',
+            ]);
+        }
+
+        return view('lecturas/registrar', [
+            'title'    => 'Registrar lectura',
+            'contador' => $contador,
+            'periodo'  => $periodo,
+            'etiqueta' => $this->periodos->etiqueta($periodo),
+        ]);
+    }
+
+    /**
+     * Guarda la lectura ingresada por el lector. (HU-14)
+     *
+     * El calculo de consumo y monto corresponde a HU-15; aqui solo se
+     * registra la lectura y la tarifa vigente que le aplica, para que
+     * el calculo posterior use la tarifa correcta a la fecha.
+     */
+    public function guardar($contadorId = null)
+    {
+        $contadorId = (int) $contadorId;
+        $periodo    = $this->periodos->periodoActual();
+
+        if (! $periodo) {
+            return redirect()->to('/lecturas/pendientes')
+                ->with('errores', ['No hay ningun periodo abierto.']);
+        }
+
+        $contador = $this->contadores->obtenerParaLectura($contadorId, (int) $periodo['id']);
+
+        if (! $contador) {
+            return redirect()->to('/lecturas/pendientes')->with('errores', [
+                'Ese contador ya tiene lectura registrada en este periodo, o no esta disponible.',
+            ]);
+        }
+
+        $anterior = (float) ($contador['lectura_anterior'] ?? $contador['lectura_inicial'] ?? 0);
+        $actual   = $this->request->getPost('lectura_actual');
+
+        if ($actual === null || $actual === '' || ! is_numeric($actual)) {
+            return redirect()->back()->withInput()
+                ->with('errores', ['Escribe la lectura actual.']);
+        }
+
+        $actual = (float) $actual;
+
+        if ($actual < $anterior) {
+            return redirect()->back()->withInput()->with('errores', [
+                'La lectura actual (' . $actual . ') no puede ser menor que la anterior ('
+                . $anterior . '). Si el contador fue reemplazado, da de baja este contador '
+                . 'y registra el nuevo desde el modulo de Contadores.',
+            ]);
+        }
+
+        $fecha  = date('Y-m-d');
+        $tarifa = $this->tarifas->tarifaVigente((string) $contador['tipo_servicio'], $fecha);
+
+        if (! $tarifa) {
+            return redirect()->back()->withInput()->with('errores', [
+                'No hay una tarifa vigente para el tipo de servicio de este contador. '
+                . 'Avisa en la oficina antes de continuar.',
+            ]);
+        }
+
+        $this->lecturas->insert([
+            'servicio_id'       => $contador['servicio_id'],
+            'contador_id'       => $contador['id'],
+            'periodo_id'        => $periodo['id'],
+            'tarifa_id'         => $tarifa['id'],
+            'lector_usuario_id' => session()->get('usuario_id'),
+            'lectura_anterior'  => $anterior,
+            'lectura_actual'    => $actual,
+            'fecha_lectura'     => $fecha,
+        ]);
+
+        return redirect()->to('/lecturas/pendientes')
+            ->with('exito', 'Lectura de ' . esc($contador['numero_serie']) . ' registrada.');
     }
 }
