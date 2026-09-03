@@ -58,8 +58,9 @@ $routes->group('lecturas', ['filter' => 'auth'], static function ($routes) {
     $routes->get('pendientes', 'Lecturas::pendientes');
     $routes->get('registrar/(:num)', 'Lecturas::registrar/$1');
     $routes->post('guardar/(:num)', 'Lecturas::guardar/$1');
+});
 
-    // HU 16: Generar recibo imprimible
-    $routes->get('recibo/(:num)', 'Lecturas::recibo/$1');
-
+// SDGODA-39 / SDGODA-47: Recibos emitidos
+$routes->group('recibos', ['filter' => 'auth'], static function ($routes) {
+    $routes->get('ver/(:num)', 'Recibos::ver/$1');
 });
