@@ -58,4 +58,8 @@ $routes->group('lecturas', ['filter' => 'auth'], static function ($routes) {
     $routes->get('pendientes', 'Lecturas::pendientes');
     $routes->get('registrar/(:num)', 'Lecturas::registrar/$1');
     $routes->post('guardar/(:num)', 'Lecturas::guardar/$1');
+
+    // HU 16: Generar recibo imprimible
+    $routes->get('recibo/(:num)', 'Lecturas::recibo/$1');
+
 });

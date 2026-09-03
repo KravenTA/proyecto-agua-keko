@@ -157,9 +157,40 @@ class Lecturas extends BaseController
             'fecha_lectura'     => $fecha,
         ]);
 
-        return redirect()->to('/lecturas/pendientes')
-            ->with('exito',
-            'Lectura de ' . esc($contador['numero_serie']) . ' registrada. '
-            . 'Consumo: ' . $consumo . ' m3 · Monto: Q' . number_format($monto, 2));
+        $lecturaId = $this->lecturas->getInsertID();
+
+        return redirect()->to('/lecturas/recibo/' . $lecturaId);
+    }
+
+      public function recibo($lecturaId = null)
+    {
+        if (! is_numeric($lecturaId) || (int) $lecturaId <= 0) {
+            return redirect()
+                ->to('/lecturas/pendientes')
+                ->with('error', 'Lectura no válida.');
+        }
+
+        $lectura = $this->lecturas->obtenerParaRecibo((int) $lecturaId);
+
+        if (! $lectura) {
+            return redirect()
+                ->to('/lecturas/pendientes')
+                ->with('error', 'No se encontró la lectura.');
+        }
+
+        $periodo = [
+            'anio' => $lectura['periodo_anio'],
+            'mes'  => $lectura['periodo_mes'],
+        ];
+
+        return view('lecturas/recibo', [
+            'title'    => 'Recibo - Oficina del Agua',
+            'lectura'  => $lectura,
+            'etiqueta' => $this->periodos->etiqueta($periodo),
+        ]);
     }
 }
+
+    
+
+
