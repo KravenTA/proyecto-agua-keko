@@ -277,10 +277,12 @@
                         Imprimir recibo
                     </button>
 
-                    <a
-                        href="<?= base_url('lecturas/pendientes') ?>"
-                        class="btn btn-outline-secondary">
-                        Volver
+                    <a href="<?= base_url('recibos') ?>" class="btn btn-outline-secondary">
+                        Ver todos los recibos
+                    </a>
+
+                    <a href="<?= base_url('lecturas/pendientes') ?>" class="btn btn-outline-secondary">
+                        Pendientes de lectura
                     </a>
 
                 </div>
