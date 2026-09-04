@@ -2,16 +2,26 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Auditable;
 use CodeIgniter\Model;
 
 class TarifaModel extends Model
 {
+    use Auditable;
+
     protected $table            = 'tarifas';
     protected $primaryKey       = 'id';
     protected $allowedFields    = ['tipo', 'volumen_incluido_litros', 'precio_unitario', 'cuota_minima', 'vigente_desde', 'vigente_hasta', 'activo'];
     protected $useTimestamps    = true;
     protected $createdField     = 'created_at';
     protected $updatedField     = 'updated_at';
+
+    // SDGODA-45: bitacora de auditoria (alta/edicion/baja) via App\Models\Traits\Auditable.
+    protected $auditoriaTabla = 'tarifas';
+    protected $beforeUpdate   = ['auditarAntesEditar'];
+    protected $afterInsert    = ['auditarAlta'];
+    protected $afterUpdate    = ['auditarEdicion'];
+    protected $beforeDelete   = ['auditarBaja'];
 
     /**
      * Busca una tarifa activa DEL MISMO TIPO cuya vigencia se traslape con

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Auditable;
 use CodeIgniter\Model;
 
 class UsuarioModel extends Model
 {
+    use Auditable;
+
     protected $table         = 'usuarios';
     protected $primaryKey    = 'id';
     protected $allowedFields = ['rol_id', 'nombre', 'email', 'password_hash', 'activo'];
@@ -13,6 +16,13 @@ class UsuarioModel extends Model
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $returnType    = 'array';
+
+    // SDGODA-45: bitacora de auditoria (alta/edicion/baja) via App\Models\Traits\Auditable.
+    protected $auditoriaTabla = 'usuarios';
+    protected $beforeUpdate   = ['auditarAntesEditar'];
+    protected $afterInsert    = ['auditarAlta'];
+    protected $afterUpdate    = ['auditarEdicion'];
+    protected $beforeDelete   = ['auditarBaja'];
 
     protected $validationRules = [
         'id'     => 'permit_empty|is_natural_no_zero',
