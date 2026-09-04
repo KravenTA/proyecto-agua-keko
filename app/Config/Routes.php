@@ -39,8 +39,9 @@ $routes->group('clientes', static function ($routes) {
 });
 
 // HU-10: Registrar contador/predio y asociarlo a un cliente (SDGODA-25)
-$routes->group('contadores', static function ($routes) {
+$routes->group('contadores', ['filter' => ['auth', 'role:Administrador,Secretaria']], static function ($routes) {
     $routes->get('/', 'Contadores::index');
+    $routes->get('tabla', 'Contadores::tabla');
     $routes->get('nuevo', 'Contadores::nuevo');
     $routes->post('/', 'Contadores::crear');
 
