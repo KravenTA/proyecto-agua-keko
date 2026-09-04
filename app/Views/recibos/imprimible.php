@@ -43,6 +43,17 @@
         color: #344767;
     }
 
+    .aviso-pendientes {
+        margin-bottom: 20px;
+        padding: 12px 16px;
+        background: #fff4e5;
+        border: 1px solid #f0ad4e;
+        border-radius: 8px;
+        color: #7a4a00;
+        font-size: 14px;
+        text-align: center;
+    }
+
     .total {
         margin-top: 25px;
         padding: 20px;
@@ -177,6 +188,13 @@
                     </div>
 
                 </div>
+
+                <?php if ($meses_pendientes > 1) : ?>
+                    <div class="aviso-pendientes">
+                        Este cliente tiene <strong><?= $meses_pendientes ?> meses pendientes de pago</strong>,
+                        incluyendo este recibo.
+                    </div>
+                <?php endif; ?>
 
                 <h6 class="text-uppercase text-secondary text-xs font-weight-bolder mb-3">
                     Detalle de consumo
