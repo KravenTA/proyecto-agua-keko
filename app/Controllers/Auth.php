@@ -13,7 +13,7 @@ class Auth extends BaseController
     public function index()
     {
         if (session()->get('isLoggedIn')) {
-            return redirect()->to('/dashboard');
+            return redirect()->to($this->destinoSegunRol());
         }
 
         return view('auth/login');
@@ -50,16 +50,7 @@ class Auth extends BaseController
             'isLoggedIn'     => true,
         ]);
 
-        switch (strtolower($rol['nombre'] ?? '')) {
-            case 'administrador':
-                return redirect()->to('/dashboard/admin');
-            case 'secretaria':
-                return redirect()->to('/dashboard/secretaria');
-            case 'lector':
-                return redirect()->to('/dashboard/lector');
-            default:
-                return redirect()->to('/dashboard');
-        }
+        return redirect()->to($this->destinoSegunRol());
     }
 
     /**
@@ -72,5 +63,21 @@ class Auth extends BaseController
 
         return redirect()->to('/login')
             ->with('mensaje', 'Sesión cerrada correctamente.');
+    }
+
+    /**
+     * A donde mandar a un usuario ya logueado, segun su rol. (SDGODA-41)
+     *
+     * Administrador y Secretaria van al dashboard de estado de cuenta.
+     * Lector no tiene acceso a ese dashboard (ver RoleFilter en Routes.php),
+     * asi que va directo a su pantalla de trabajo: pendientes de lectura.
+     */
+    private function destinoSegunRol(): string
+    {
+        return match (strtolower(session()->get('rol_nombre') ?? '')) {
+            'administrador', 'secretaria' => '/dashboard',
+            'lector'                      => '/lecturas/pendientes',
+            default                       => '/login',
+        };
     }
 }
