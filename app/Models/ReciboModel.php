@@ -74,6 +74,7 @@ class ReciboModel extends Model
                 lecturas.consumo,
                 lecturas.monto,
                 lecturas.fecha_lectura,
+                clientes.id AS cliente_id,
                 clientes.nombre AS cliente_nombre,
                 clientes.telefono AS cliente_telefono,
                 servicios.codigo AS servicio_codigo,
@@ -95,6 +96,24 @@ class ReciboModel extends Model
             ->join('tarifas', 'tarifas.id = lecturas.tarifa_id')
             ->where('recibos.id', $reciboId)
             ->first();
+    }
+
+    /**
+     * Cuantos recibos pendientes de pago tiene un cliente (SDGODA-48).
+     *
+     * Misma definicion de "pendiente" que ClienteModel::estadoDeCuenta()
+     * (recibos.estado = 'pendiente') para que el recibo (HU-16) y el
+     * dashboard (HU-18) muestren siempre el mismo numero para un cliente.
+     * Incluye el recibo que se esta consultando/imprimiendo, si todavia
+     * no esta pagado.
+     */
+    public function mesesPendientesDelCliente(int $clienteId): int
+    {
+        return $this->join('lecturas', 'lecturas.id = recibos.lectura_id')
+            ->join('servicios', 'servicios.id = lecturas.servicio_id')
+            ->where('servicios.cliente_id', $clienteId)
+            ->where('recibos.estado', 'pendiente')
+            ->countAllResults();
     }
 
     /**

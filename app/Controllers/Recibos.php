@@ -72,12 +72,15 @@ class Recibos extends BaseController
         }
 
         return view('recibos/imprimible', [
-            'title'    => 'Recibo ' . $recibo['numero'],
-            'recibo'   => $recibo,
-            'etiqueta' => $this->periodos->etiqueta([
+            'title'           => 'Recibo ' . $recibo['numero'],
+            'recibo'          => $recibo,
+            'etiqueta'        => $this->periodos->etiqueta([
                 'anio' => $recibo['periodo_anio'],
                 'mes'  => $recibo['periodo_mes'],
             ]),
+            // SDGODA-48: mismo dato que muestra el dashboard (HU-18) para
+            // este cliente, para que los dos queden alineados.
+            'meses_pendientes' => $this->recibos->mesesPendientesDelCliente((int) $recibo['cliente_id']),
         ]);
     }
 }
