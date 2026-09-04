@@ -43,7 +43,7 @@ $routes->group('contadores', static function ($routes) {
     $routes->get('/', 'Contadores::index');
     $routes->get('nuevo', 'Contadores::nuevo');
     $routes->post('/', 'Contadores::crear');
-    
+
     // HU-11: Editar, activar y desactivar un contador (SDGODA-26)
     $routes->get('editar/(:num)', 'Contadores::editar/$1');
     $routes->post('actualizar/(:num)', 'Contadores::actualizar/$1');
@@ -72,4 +72,10 @@ $routes->group('pagos', ['filter' => ['auth', 'role:Administrador,Secretaria']],
     $routes->get('/', 'Pagos::index');
     $routes->get('nuevo/(:num)', 'Pagos::nuevo/$1');
     $routes->post('/', 'Pagos::crear');
+});
+
+// HU-18: Dashboard de estado de cuenta (SDGODA-41)
+$routes->group('dashboard', ['filter' => ['auth', 'role:Administrador,Secretaria']], static function ($routes) {
+    $routes->get('/', 'Dashboard::index');
+    $routes->get('tabla', 'Dashboard::tabla');
 });
