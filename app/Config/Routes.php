@@ -73,6 +73,7 @@ $routes->group('pagos', ['filter' => ['auth', 'role:Administrador,Secretaria']],
     $routes->get('/', 'Pagos::index');
     $routes->get('nuevo/(:num)', 'Pagos::nuevo/$1');
     $routes->post('/', 'Pagos::crear');
+    $routes->get('tabla', 'Pagos::tabla');
 });
 
 // HU-18: Dashboard de estado de cuenta (SDGODA-41)

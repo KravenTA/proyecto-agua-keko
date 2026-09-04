@@ -29,50 +29,107 @@
                 <h6 class="mb-0">Recibos pendientes de pago</h6>
             </div>
 
-            <div class="card-body px-0 pt-3 pb-2">
-                <div class="table-responsive p-0">
-                    <table class="table align-items-center mb-0">
-                        <thead>
-                            <tr>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-4">Recibo</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Cliente</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Contador</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Periodo</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Fecha emision</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Total</th>
-                                <th class="text-secondary opacity-7"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($pendientes)) : ?>
-                                <tr>
-                                    <td colspan="7" class="text-center text-sm text-secondary py-4">
-                                        No hay recibos pendientes de pago.
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
-
-                            <?php foreach ($pendientes as $r) : ?>
-                                <tr>
-                                    <td class="ps-4"><span class="text-sm font-weight-bold"><?= esc($r['numero']) ?></span></td>
-                                    <td><span class="text-sm text-secondary"><?= esc($r['cliente_nombre']) ?></span></td>
-                                    <td><span class="text-sm text-secondary"><?= esc($r['numero_contador']) ?></span></td>
-                                    <td><span class="text-sm text-secondary"><?= esc($r['periodo_mes']) ?>/<?= esc($r['periodo_anio']) ?></span></td>
-                                    <td><span class="text-sm text-secondary"><?= esc($r['fecha_emision']) ?></span></td>
-                                    <td><span class="text-sm font-weight-bold">Q<?= number_format((float) $r['total'], 2) ?></span></td>
-                                    <td class="text-end pe-4">
-                                        <a href="<?= base_url('pagos/nuevo/' . $r['id']) ?>"
-                                           class="btn btn-primary btn-sm mb-0">Registrar pago</a>
-                                    </td>
-                                </tr>
+            <div class="card-body pb-2">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-7">
+                        <label for="buscador" class="form-label text-xs">Buscar</label>
+                        <input type="text" class="form-control form-control-sm" id="buscador"
+                               placeholder="No. de recibo, cliente o contador"
+                               value="<?= esc($filtros['busqueda']) ?>" autocomplete="off">
+                    </div>
+                    <div class="col-8 col-md-4">
+                        <label for="filtro-periodo" class="form-label text-xs">Periodo</label>
+                        <select class="form-control form-control-sm" id="filtro-periodo">
+                            <option value="">Todos</option>
+                            <?php $mesesLargos = [1 => 'Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']; ?>
+                            <?php foreach ($periodos as $p) : ?>
+                                <option value="<?= $p['id'] ?>"
+                                    <?= (string) $filtros['periodo_id'] === (string) $p['id'] ? 'selected' : '' ?>>
+                                    <?= esc(($mesesLargos[(int) $p['mes']] ?? '') . ' ' . $p['anio']) ?>
+                                </option>
                             <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                        </select>
+                    </div>
+                    <div class="col-4 col-md-1 text-end">
+                        <span class="text-xs text-secondary d-none" id="cargando">Buscando...</span>
+                    </div>
                 </div>
+            </div>
+
+            <div class="card-body px-0 pt-3 pb-2" id="contenedor-tabla">
+                <?= view('pagos/_tabla', [
+                        'pendientes' => $pendientes,
+                        'pager'      => $pager,
+                        'filtros'    => $filtros,
+                    ]) ?>
             </div>
         </div>
 
     </div>
 </main>
+<script>
+(function () {
+    const buscador   = document.getElementById('buscador');
+    const periodo    = document.getElementById('filtro-periodo');
+    const contenedor = document.getElementById('contenedor-tabla');
+    const cargando   = document.getElementById('cargando');
+    const urlBase    = '<?= base_url('pagos/tabla') ?>';
 
+    let temporizador = null;
+    let peticion     = null;
+
+    function construirUrl(pagina) {
+        const params = new URLSearchParams();
+        if (buscador.value.trim() !== '') params.set('q', buscador.value.trim());
+        if (periodo.value !== '')         params.set('periodo_id', periodo.value);
+        if (pagina)                       params.set('page', pagina);
+        return urlBase + '?' + params.toString();
+    }
+
+    async function actualizar(pagina) {
+        if (peticion) peticion.abort();
+        peticion = new AbortController();
+
+        cargando.classList.remove('d-none');
+
+        try {
+            const respuesta = await fetch(construirUrl(pagina), {
+                signal: peticion.signal,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (! respuesta.ok) throw new Error('Respuesta ' + respuesta.status);
+
+            contenedor.innerHTML = await respuesta.text();
+
+            history.replaceState(null, '', '<?= base_url('pagos') ?>?' +
+                construirUrl(pagina).split('?')[1]);
+
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                contenedor.innerHTML =
+                    '<p class="text-center text-sm text-danger py-4">' +
+                    'No se pudo cargar la lista. Revisa tu conexion e intenta de nuevo.</p>';
+            }
+        } finally {
+            cargando.classList.add('d-none');
+        }
+    }
+
+    buscador.addEventListener('input', function () {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(() => actualizar(1), 350);
+    });
+
+    periodo.addEventListener('change', () => actualizar(1));
+
+    contenedor.addEventListener('click', function (evento) {
+        const enlace = evento.target.closest('.pagination a');
+        if (! enlace) return;
+        evento.preventDefault();
+        const pagina = new URL(enlace.href, window.location.origin).searchParams.get('page');
+        actualizar(pagina || 1);
+    });
+})();
+</script>
 <?= view('layouts/footer') ?>
