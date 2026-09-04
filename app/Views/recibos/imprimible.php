@@ -88,6 +88,20 @@
         .acciones {
             display: none !important;
         }
+
+        .row {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+        }
+
+        .row > [class*="col-"] {
+            flex: 0 0 50% !important;
+            max-width: 50% !important;
+        }
+
+        .text-md-end {
+            text-align: right !important;
+        }
     }
 </style>
 
