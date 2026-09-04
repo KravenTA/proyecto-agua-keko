@@ -43,14 +43,12 @@ $routes->group('contadores', static function ($routes) {
     $routes->get('/', 'Contadores::index');
     $routes->get('nuevo', 'Contadores::nuevo');
     $routes->post('/', 'Contadores::crear');
-    
+
     // HU-11: Editar, activar y desactivar un contador (SDGODA-26)
     $routes->get('editar/(:num)', 'Contadores::editar/$1');
     $routes->post('actualizar/(:num)', 'Contadores::actualizar/$1');
     $routes->post('desactivar/(:num)', 'Contadores::desactivar/$1');
     $routes->post('activar/(:num)', 'Contadores::activar/$1');
-
-
 });
 
 // HU-12/HU-14/HU-15: lecturas (SDGODA-27, 37, 38)
@@ -61,5 +59,11 @@ $routes->group('lecturas', ['filter' => 'auth'], static function ($routes) {
 
     // HU 16: Generar recibo imprimible
     $routes->get('recibo/(:num)', 'Lecturas::recibo/$1');
+});
 
+// HU-17: Registrar pago de una lectura pendiente (SDGODA-40)
+$routes->group('pagos', ['filter' => 'auth'], static function ($routes) {
+    $routes->get('/', 'Pagos::index');
+    $routes->get('nuevo/(:num)', 'Pagos::nuevo/$1');
+    $routes->post('/', 'Pagos::crear');
 });

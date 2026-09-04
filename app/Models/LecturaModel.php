@@ -54,4 +54,53 @@ class LecturaModel extends Model
             ->where('lecturas.id', $lecturaId)
             ->first();
     }
+
+    /**
+     * Lecturas que todavía NO tienen un pago registrado —
+     * para la pantalla de "pendientes de pago".
+     */
+    public function pendientesDePago(): array
+    {
+        return $this->select('
+                lecturas.id AS lectura_id,
+                clientes.nombre AS cliente_nombre,
+                servicios.codigo AS servicio_codigo,
+                contadores.numero_serie AS numero_contador,
+                periodos.anio AS periodo_anio,
+                periodos.mes AS periodo_mes,
+                lecturas.fecha_lectura,
+                lecturas.monto
+            ')
+            ->join('servicios', 'servicios.id = lecturas.servicio_id')
+            ->join('clientes', 'clientes.id = servicios.cliente_id')
+            ->join('contadores', 'contadores.id = lecturas.contador_id')
+            ->join('periodos', 'periodos.id = lecturas.periodo_id')
+            ->join('pagos', 'pagos.lectura_id = lecturas.id', 'left')
+            ->where('pagos.id', null)
+            ->orderBy('lecturas.fecha_lectura', 'ASC')
+            ->findAll();
+    }
+
+    /**
+     * Trae una lectura específica solo si existe y todavía
+     * NO tiene un pago registrado (para el formulario de "nuevo pago").
+     */
+    public function obtenerLecturaPendiente(int $lecturaId): ?array
+    {
+        return $this->select('
+                lecturas.id AS lectura_id,
+                clientes.nombre AS cliente_nombre,
+                servicios.codigo AS servicio_codigo,
+                periodos.anio AS periodo_anio,
+                periodos.mes AS periodo_mes,
+                lecturas.monto
+            ')
+            ->join('servicios', 'servicios.id = lecturas.servicio_id')
+            ->join('clientes', 'clientes.id = servicios.cliente_id')
+            ->join('periodos', 'periodos.id = lecturas.periodo_id')
+            ->join('pagos', 'pagos.lectura_id = lecturas.id', 'left')
+            ->where('lecturas.id', $lecturaId)
+            ->where('pagos.id', null)
+            ->first();
+    }
 }
