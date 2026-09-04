@@ -66,3 +66,10 @@ $routes->group('recibos', ['filter' => 'auth'], static function ($routes) {
     $routes->get('ver/(:num)', 'Recibos::ver/$1');
     $routes->get('tabla', 'Recibos::tabla');
 });
+
+// HU-17: Registrar pago de un recibo pendiente (SDGODA-40)
+$routes->group('pagos', ['filter' => ['auth', 'role:Administrador,Secretaria']], static function ($routes) {
+    $routes->get('/', 'Pagos::index');
+    $routes->get('nuevo/(:num)', 'Pagos::nuevo/$1');
+    $routes->post('/', 'Pagos::crear');
+});
