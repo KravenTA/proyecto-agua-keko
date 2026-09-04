@@ -6,6 +6,7 @@ use App\Models\ContadorModel;
 use App\Models\PeriodoModel;
 use App\Models\LecturaModel;
 use App\Models\TarifaModel;
+use App\Models\ReciboModel;
 
 /**
  * HU-12: Ver contadores pendientes de lectura del periodo (SDGODA-27).
@@ -18,6 +19,7 @@ class Lecturas extends BaseController
     protected PeriodoModel $periodos;
     protected LecturaModel $lecturas;
     protected TarifaModel $tarifas;
+    protected ReciboModel $recibos;
 
     public function __construct()
     {
@@ -25,6 +27,7 @@ class Lecturas extends BaseController
         $this->periodos   = new PeriodoModel();
         $this->lecturas   = new LecturaModel();
         $this->tarifas    = new TarifaModel();
+        $this->recibos    = new ReciboModel();
     }
 
     public function pendientes()
@@ -158,39 +161,8 @@ class Lecturas extends BaseController
         ]);
 
         $lecturaId = $this->lecturas->getInsertID();
+        $recibo    = $this->recibos->emitirPorLectura($lecturaId, $monto);
 
-        return redirect()->to('/lecturas/recibo/' . $lecturaId);
-    }
-
-      public function recibo($lecturaId = null)
-    {
-        if (! is_numeric($lecturaId) || (int) $lecturaId <= 0) {
-            return redirect()
-                ->to('/lecturas/pendientes')
-                ->with('error', 'Lectura no válida.');
-        }
-
-        $lectura = $this->lecturas->obtenerParaRecibo((int) $lecturaId);
-
-        if (! $lectura) {
-            return redirect()
-                ->to('/lecturas/pendientes')
-                ->with('error', 'No se encontró la lectura.');
-        }
-
-        $periodo = [
-            'anio' => $lectura['periodo_anio'],
-            'mes'  => $lectura['periodo_mes'],
-        ];
-
-        return view('lecturas/recibo', [
-            'title'    => 'Recibo - Oficina del Agua',
-            'lectura'  => $lectura,
-            'etiqueta' => $this->periodos->etiqueta($periodo),
-        ]);
+        return redirect()->to('/recibos/ver/' . $recibo['id']);
     }
 }
-
-    
-
-

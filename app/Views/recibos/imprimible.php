@@ -1,5 +1,5 @@
 <?= view('layouts/header', [
-    'title'      => 'Recibo - Oficina del Agua',
+    'title'      => 'Recibo - Oficina de Agua',
     'body_class' => 'bg-gray-100',
 ]) ?>
 
@@ -88,6 +88,20 @@
         .acciones {
             display: none !important;
         }
+
+        .row {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+        }
+
+        .row > [class*="col-"] {
+            flex: 0 0 50% !important;
+            max-width: 50% !important;
+        }
+
+        .text-md-end {
+            text-align: right !important;
+        }
     }
 </style>
 
@@ -100,10 +114,14 @@
             <div class="recibo">
 
                 <div class="recibo-header">
-                    <h2>OFICINA DEL AGUA</h2>
+                    <h2>OFICINA DE AGUA</h2>
 
                     <p class="text-secondary">
                         RECIBO DE CONSUMO DE AGUA
+                    </p>
+
+                    <p class="text-center" style="margin-top:4px;">
+                        Recibo No. <strong><?= esc($recibo['numero']) ?></strong>
                     </p>
                 </div>
 
@@ -116,19 +134,19 @@
                         </p>
 
                         <h5 class="mb-1">
-                            <?= esc($lectura['cliente_nombre']) ?>
+                            <?= esc($recibo['cliente_nombre']) ?>
                         </h5>
 
-                        <?php if (! empty($lectura['direccion'])) : ?>
+                        <?php if (! empty($recibo['direccion'])) : ?>
                             <p class="text-sm mb-1">
-                                <?= esc($lectura['direccion']) ?>
+                                <?= esc($recibo['direccion']) ?>
                             </p>
                         <?php endif; ?>
 
-                        <?php if (! empty($lectura['cliente_telefono'])) : ?>
+                        <?php if (! empty($recibo['cliente_telefono'])) : ?>
                             <p class="text-sm mb-0">
                                 Tel:
-                                <?= esc($lectura['cliente_telefono']) ?>
+                                <?= esc($recibo['cliente_telefono']) ?>
                             </p>
                         <?php endif; ?>
 
@@ -147,13 +165,13 @@
                         <p class="text-sm mb-0">
                             Contador:
                             <strong>
-                                <?= esc($lectura['numero_contador']) ?>
+                                <?= esc($recibo['numero_contador']) ?>
                             </strong>
                         </p>
 
                         <p class="text-sm mb-0">
                             Fecha:
-                            <?= esc($lectura['fecha_lectura']) ?>
+                            <?= esc($recibo['fecha_lectura']) ?>
                         </p>
 
                     </div>
@@ -169,7 +187,7 @@
 
                     <strong>
                         <?= number_format(
-                            (float) $lectura['lectura_anterior'],
+                            (float) $recibo['lectura_anterior'],
                             2
                         ) ?>
                     </strong>
@@ -180,7 +198,7 @@
 
                     <strong>
                         <?= number_format(
-                            (float) $lectura['lectura_actual'],
+                            (float) $recibo['lectura_actual'],
                             2
                         ) ?>
                     </strong>
@@ -191,7 +209,7 @@
 
                     <strong>
                         <?= number_format(
-                            (float) $lectura['consumo'],
+                            (float) $recibo['consumo'],
                             2
                         ) ?>
                         m³
@@ -199,15 +217,26 @@
                 </div>
 
                 <?php
-                    $incluidoM3     = ((float) $lectura['volumen_incluido_litros']) / 1000;
-                    $consumo        = (float) $lectura['consumo'];
+                    $incluidoM3     = ((float) $recibo['volumen_incluido_litros']) / 1000;
+                    $consumo        = (float) $recibo['consumo'];
                     $excedenteM3    = max(0, $consumo - $incluidoM3);
-                    $cargoExcedente = $excedenteM3 > 0 ? ((float) $lectura['monto'] - (float) $lectura['cuota_minima']) : 0;
+                    $cargoExcedente = $excedenteM3 > 0 ? ((float) $recibo['monto'] - (float) $recibo['cuota_minima']) : 0;
                 ?>
 
                 <div class="dato">
                     <span>Volumen incluido</span>
                     <strong><?= number_format($incluidoM3, 2) ?> m³</strong>
+                </div>
+
+                <div class="dato">
+                    <span>Cuota mínima</span>
+
+                    <strong>
+                        Q<?= number_format(
+                            (float) $recibo['cuota_minima'],
+                            2
+                        ) ?>
+                    </strong>
                 </div>
 
                 <?php if ($excedenteM3 > 0) : ?>
@@ -231,20 +260,9 @@
                                 str_replace(
                                     '_',
                                     ' ',
-                                    $lectura['tarifa_tipo']
+                                    $recibo['tarifa_tipo']
                                 )
                             )
-                        ) ?>
-                    </strong>
-                </div>
-
-                <div class="dato">
-                    <span>Cuota mínima</span>
-
-                    <strong>
-                        Q<?= number_format(
-                            (float) $lectura['cuota_minima'],
-                            2
                         ) ?>
                     </strong>
                 </div>
@@ -257,7 +275,7 @@
 
                     <div class="total-monto">
                         Q<?= number_format(
-                            (float) $lectura['monto'],
+                            (float) $recibo['monto'],
                             2
                         ) ?>
                     </div>
@@ -273,10 +291,12 @@
                         Imprimir recibo
                     </button>
 
-                    <a
-                        href="<?= base_url('lecturas/pendientes') ?>"
-                        class="btn btn-outline-secondary">
-                        Volver
+                    <a href="<?= base_url('recibos') ?>" class="btn btn-outline-secondary">
+                        Ver todos los recibos
+                    </a>
+
+                    <a href="<?= base_url('lecturas/pendientes') ?>" class="btn btn-outline-secondary">
+                        Pendientes de lectura
                     </a>
 
                 </div>

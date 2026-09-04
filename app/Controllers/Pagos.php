@@ -3,48 +3,47 @@
 namespace App\Controllers;
 
 use App\Models\PagoModel;
-use App\Models\LecturaModel;
+use App\Models\ReciboModel;
 
 class Pagos extends BaseController
 {
     protected $pagoModel;
-    protected $lecturaModel;
+    protected $reciboModel;
 
     public function __construct()
     {
-        $this->pagoModel    = new PagoModel();
-        $this->lecturaModel = new LecturaModel();
+        $this->pagoModel   = new PagoModel();
+        $this->reciboModel = new ReciboModel();
     }
 
     /**
-     * Pantalla "Pagos pendientes": lista las lecturas que todavía no
-     * tienen un pago registrado.
+     * Pantalla "Pagos pendientes": recibos con estado = 'pendiente'.
      */
     public function index()
     {
-        $data['pendientes'] = $this->lecturaModel->pendientesDePago();
+        $data['pendientes'] = $this->reciboModel->listar(['estado' => 'pendiente'])->findAll();
 
         return view('pagos/pendientes', $data);
     }
 
     /**
-     * Formulario para registrar el pago de una lectura específica.
+     * Formulario para registrar el pago de un recibo pendiente.
      */
-    public function nuevo($lecturaId = null)
+    public function nuevo($reciboId = null)
     {
-        if (! is_numeric($lecturaId) || (int) $lecturaId <= 0) {
+        if (! is_numeric($reciboId) || (int) $reciboId <= 0) {
             return redirect()->to('/pagos')
-                ->with('errores', ['Lectura no válida.']);
+                ->with('errores', ['Recibo no válido.']);
         }
 
-        $lectura = $this->lecturaModel->obtenerLecturaPendiente((int) $lecturaId);
+        $recibo = $this->reciboModel->obtenerParaImprimir((int) $reciboId);
 
-        if (! $lectura) {
+        if (! $recibo || $recibo['estado'] !== 'pendiente') {
             return redirect()->to('/pagos')
-                ->with('errores', ['Esa lectura no existe o ya tiene un pago registrado.']);
+                ->with('errores', ['Ese recibo no existe o ya fue pagado.']);
         }
 
-        $data['lectura'] = $lectura;
+        $data['recibo'] = $recibo;
 
         return view('pagos/form', $data);
     }
@@ -56,6 +55,7 @@ class Pagos extends BaseController
     {
         $reglas = [
             'lectura_id' => 'required|integer|is_unique[pagos.lectura_id]',
+            'recibo_id'  => 'required|integer',
             'monto'      => 'required|decimal|greater_than[0]',
             'fecha_pago' => 'required|valid_date',
             'metodo'     => 'required|max_length[30]',
@@ -71,6 +71,7 @@ class Pagos extends BaseController
 
         $pagoId = $this->pagoModel->registrarPago(
             (int) $this->request->getPost('lectura_id'),
+            (int) $this->request->getPost('recibo_id'),
             (float) $this->request->getPost('monto'),
             $this->request->getPost('fecha_pago'),
             $this->request->getPost('metodo'),

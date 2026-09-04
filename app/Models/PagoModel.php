@@ -28,6 +28,7 @@ class PagoModel extends Model
 
     protected $validationRules = [
         'lectura_id' => 'required|integer|is_unique[pagos.lectura_id]',
+        'recibo_id'  => 'required|integer',
         'monto'      => 'required|decimal|greater_than[0]',
         'fecha_pago' => 'required|valid_date',
         'metodo'     => 'required|max_length[30]',
@@ -43,17 +44,14 @@ class PagoModel extends Model
     ];
 
     /**
-     * Registra el pago dentro de una transacción: obtiene o crea el recibo
-     * de la lectura (vía ReciboModel), y guarda el pago con lectura_id +
-     * recibo_id + el usuario que lo registra.
+     * Registra el pago y marca el recibo como pagado, en una transaccion.
+     * El recibo ya existe (se crea al registrar la lectura, en
+     * Lecturas::guardar() -> ReciboModel::emitirPorLectura()).
      */
-    public function registrarPago(int $lecturaId, float $monto, string $fechaPago, string $metodo, int $usuarioId, ?string $referencia = null): int|false
+    public function registrarPago(int $lecturaId, int $reciboId, float $monto, string $fechaPago, string $metodo, int $usuarioId, ?string $referencia = null): int|false
     {
         $db = \Config\Database::connect();
         $db->transStart();
-
-        $reciboModel = new ReciboModel();
-        $reciboId    = $reciboModel->obtenerOCrearParaLectura($lecturaId);
 
         $pagoId = $this->insert([
             'lectura_id' => $lecturaId,
@@ -64,6 +62,8 @@ class PagoModel extends Model
             'metodo'     => $metodo,
             'referencia' => $referencia,
         ]);
+
+        (new ReciboModel())->update($reciboId, ['estado' => 'pagado']);
 
         $db->transComplete();
 

@@ -40,4 +40,14 @@ class PeriodoModel extends Model
 
         return ($meses[$mes] ?? 'Mes ' . $mes) . ' ' . $periodo['anio'];
     }
+
+    /**
+     * Todos los periodos, del mas reciente al mas viejo.
+     */
+    public function listarTodos(): array
+    {
+        return $this->orderBy('anio', 'DESC')
+            ->orderBy('mes', 'DESC')
+            ->findAll();
+    }
 }

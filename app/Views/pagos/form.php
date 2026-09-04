@@ -22,31 +22,31 @@
 
                 <div class="card">
                     <div class="card-header pb-0">
-                        <h6 class="mb-0">Registrar pago</h6>
+                        <h6 class="mb-0">Registrar pago &mdash; Recibo <?= esc($recibo['numero']) ?></h6>
                         <p class="text-sm text-secondary mb-0">
-                            <?= esc($lectura['cliente_nombre']) ?> &mdash;
-                            Servicio <?= esc($lectura['servicio_codigo']) ?>,
-                            periodo <?= esc($lectura['periodo_mes']) ?>/<?= esc($lectura['periodo_anio']) ?>
+                            <?= esc($recibo['cliente_nombre']) ?> &mdash;
+                            Servicio <?= esc($recibo['servicio_codigo']) ?>,
+                            periodo <?= esc($recibo['periodo_mes']) ?>/<?= esc($recibo['periodo_anio']) ?>
                         </p>
                     </div>
 
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label">Monto de la lectura</label>
-                            <input type="text" class="form-control" value="Q<?= number_format((float) $lectura['monto'], 2) ?>" disabled>
-                            <small class="text-xs text-secondary">Este es el monto calculado para la lectura del periodo.</small>
+                            <label class="form-label">Total del recibo</label>
+                            <input type="text" class="form-control" value="Q<?= number_format((float) $recibo['total'], 2) ?>" disabled>
                         </div>
 
                         <form method="post" action="<?= base_url('pagos') ?>">
                             <?= csrf_field() ?>
-                            <input type="hidden" name="lectura_id" value="<?= esc($lectura['lectura_id']) ?>">
+                            <input type="hidden" name="lectura_id" value="<?= esc($recibo['lectura_id']) ?>">
+                            <input type="hidden" name="recibo_id" value="<?= esc($recibo['id']) ?>">
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Monto a pagar</label>
                                     <input type="number" step="0.01" min="0.01" class="form-control" name="monto"
                                            required
-                                           value="<?= esc(old('monto', $lectura['monto'])) ?>">
+                                           value="<?= esc(old('monto', $recibo['total'])) ?>">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Fecha de pago</label>
