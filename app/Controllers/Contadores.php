@@ -22,14 +22,42 @@ class Contadores extends BaseController
         $this->sectores   = new SectorModel();
     }
 
-    /**
-     * Listado de contadores registrados, con su cliente y sector.
-     */
     public function index()
     {
+        $filtros = [
+            'busqueda'  => trim((string) $this->request->getGet('q')),
+            'sector_id' => $this->request->getGet('sector_id') ?? '',
+            'activo'    => $this->request->getGet('activo') ?? '',
+        ];
+
+        $contadores = $this->contadores->listarFiltrado($filtros)->paginate(15);
+
         return view('contadores/index', [
             'title'      => 'Contadores',
-            'contadores' => $this->contadores->listarConDetalle(),
+            'contadores' => $contadores,
+            'pager'      => $this->contadores->pager,
+            'sectores'   => $this->sectores->where('activo', 1)->orderBy('nombre', 'ASC')->findAll(),
+            'filtros'    => $filtros,
+        ]);
+    }
+
+    /**
+     * Devuelve solo la tabla, para actualizarla por AJAX sin recargar. (SDGODA-49)
+     */
+    public function tabla()
+    {
+        $filtros = [
+            'busqueda'  => trim((string) $this->request->getGet('q')),
+            'sector_id' => $this->request->getGet('sector_id') ?? '',
+            'activo'    => $this->request->getGet('activo') ?? '',
+        ];
+
+        $contadores = $this->contadores->listarFiltrado($filtros)->paginate(15);
+
+        return view('contadores/_tabla', [
+            'contadores' => $contadores,
+            'pager'      => $this->contadores->pager,
+            'filtros'    => $filtros,
         ]);
     }
 

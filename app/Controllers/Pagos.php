@@ -16,14 +16,48 @@ class Pagos extends BaseController
         $this->reciboModel = new ReciboModel();
     }
 
-    /**
-     * Pantalla "Pagos pendientes": recibos con estado = 'pendiente'.
-     */
     public function index()
     {
-        $data['pendientes'] = $this->reciboModel->listar(['estado' => 'pendiente'])->findAll();
+        $filtros = $this->filtrosDesdeRequest();
 
-        return view('pagos/pendientes', $data);
+        $pendientes = $this->reciboModel->listar($filtros)->paginate(15);
+
+        return view('pagos/pendientes', [
+            'title'      => 'Pagos pendientes',
+            'pendientes' => $pendientes,
+            'pager'      => $this->reciboModel->pager,
+            'periodos'   => (new \App\Models\PeriodoModel())->listarTodos(),
+            'filtros'    => $filtros,
+        ]);
+    }
+
+    /**
+     * Devuelve solo la tabla, para actualizarla por AJAX sin recargar. (SDGODA-49)
+     */
+    public function tabla()
+    {
+        $filtros = $this->filtrosDesdeRequest();
+
+        $pendientes = $this->reciboModel->listar($filtros)->paginate(15);
+
+        return view('pagos/_tabla', [
+            'pendientes' => $pendientes,
+            'pager'      => $this->reciboModel->pager,
+            'filtros'    => $filtros,
+        ]);
+    }
+
+    /**
+     * El estado siempre queda en 'pendiente': esta pantalla es para cobrar,
+     * no para consultar el historial. Ese es el listado de recibos.
+     */
+    private function filtrosDesdeRequest(): array
+    {
+        return [
+            'busqueda'   => trim((string) $this->request->getGet('q')),
+            'periodo_id' => $this->request->getGet('periodo_id') ?? '',
+            'estado'     => 'pendiente',
+        ];
     }
 
     /**

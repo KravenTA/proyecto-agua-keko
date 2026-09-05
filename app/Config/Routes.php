@@ -39,8 +39,9 @@ $routes->group('clientes', static function ($routes) {
 });
 
 // HU-10: Registrar contador/predio y asociarlo a un cliente (SDGODA-25)
-$routes->group('contadores', static function ($routes) {
+$routes->group('contadores', ['filter' => ['auth', 'role:Administrador,Secretaria']], static function ($routes) {
     $routes->get('/', 'Contadores::index');
+    $routes->get('tabla', 'Contadores::tabla');
     $routes->get('nuevo', 'Contadores::nuevo');
     $routes->post('/', 'Contadores::crear');
 
@@ -53,11 +54,17 @@ $routes->group('contadores', static function ($routes) {
 
 });
 
-// HU-12/HU-14/HU-15: lecturas (SDGODA-27, 37, 38)
+// HU-12/HU-14: registro de lecturas en campo (SDGODA-27, 37, 38)
 $routes->group('lecturas', ['filter' => 'auth'], static function ($routes) {
     $routes->get('pendientes', 'Lecturas::pendientes');
     $routes->get('registrar/(:num)', 'Lecturas::registrar/$1');
     $routes->post('guardar/(:num)', 'Lecturas::guardar/$1');
+});
+
+// SDGODA-49: historial de lecturas, para oficina
+$routes->group('lecturas', ['filter' => ['auth', 'role:Administrador,Secretaria']], static function ($routes) {
+    $routes->get('/', 'Lecturas::index');
+    $routes->get('tabla', 'Lecturas::tabla');
 });
 
 // SDGODA-39 / SDGODA-47: Recibos emitidos
@@ -72,6 +79,7 @@ $routes->group('pagos', ['filter' => ['auth', 'role:Administrador,Secretaria']],
     $routes->get('/', 'Pagos::index');
     $routes->get('nuevo/(:num)', 'Pagos::nuevo/$1');
     $routes->post('/', 'Pagos::crear');
+    $routes->get('tabla', 'Pagos::tabla');
 });
 
 // HU-18: Dashboard de estado de cuenta (SDGODA-41)

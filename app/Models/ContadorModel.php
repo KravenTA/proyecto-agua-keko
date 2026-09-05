@@ -159,4 +159,46 @@ class ContadorModel extends Model
 
         return null;
     }
+
+    /**
+     * Listado con filtros y paginacion, siguiendo el patron de HU-09.
+     * $filtros acepta: busqueda, sector_id, activo. (SDGODA-49)
+     */
+    public function listarFiltrado(array $filtros = [])
+    {
+        $builder = $this->select('
+                contadores.id,
+                contadores.numero_serie,
+                contadores.tipo_servicio,
+                contadores.lectura_inicial,
+                contadores.fecha_instalacion,
+                contadores.activo,
+                servicios.codigo AS servicio_codigo,
+                servicios.direccion AS referencia,
+                sectores.nombre AS sector_nombre,
+                clientes.id AS cliente_id,
+                clientes.nombre AS cliente_nombre
+            ')
+            ->join('servicios', 'servicios.id = contadores.servicio_id')
+            ->join('sectores', 'sectores.id = servicios.sector_id')
+            ->join('clientes', 'clientes.id = servicios.cliente_id');
+
+        if (! empty($filtros['busqueda'])) {
+            $builder->groupStart()
+                ->like('contadores.numero_serie', $filtros['busqueda'])
+                ->orLike('clientes.nombre', $filtros['busqueda'])
+                ->orLike('servicios.direccion', $filtros['busqueda'])
+                ->groupEnd();
+        }
+
+        if (! empty($filtros['sector_id'])) {
+            $builder->where('servicios.sector_id', $filtros['sector_id']);
+        }
+
+        if (isset($filtros['activo']) && $filtros['activo'] !== '') {
+            $builder->where('contadores.activo', $filtros['activo']);
+        }
+
+        return $builder->orderBy('contadores.numero_serie', 'ASC');
+    }
 }

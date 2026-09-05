@@ -7,6 +7,7 @@ use App\Models\PeriodoModel;
 use App\Models\LecturaModel;
 use App\Models\TarifaModel;
 use App\Models\ReciboModel;
+use App\Models\SectorModel;
 
 /**
  * HU-12: Ver contadores pendientes de lectura del periodo (SDGODA-27).
@@ -20,6 +21,7 @@ class Lecturas extends BaseController
     protected LecturaModel $lecturas;
     protected TarifaModel $tarifas;
     protected ReciboModel $recibos;
+    protected SectorModel $sectores;
 
     public function __construct()
     {
@@ -28,6 +30,7 @@ class Lecturas extends BaseController
         $this->lecturas   = new LecturaModel();
         $this->tarifas    = new TarifaModel();
         $this->recibos    = new ReciboModel();
+        $this->sectores   = new SectorModel();
     }
 
     public function pendientes()
@@ -164,5 +167,44 @@ class Lecturas extends BaseController
         $recibo    = $this->recibos->emitirPorLectura($lecturaId, $monto);
 
         return redirect()->to('/recibos/ver/' . $recibo['id']);
+    }
+
+    /**
+     * Listado de lecturas registradas, con filtros. (SDGODA-49)
+     * Hasta ahora una lectura desaparecia al registrarse: solo se veian las
+     * pendientes.
+     */
+    public function index()
+    {
+        $filtros = $this->filtrosDesdeRequest();
+
+        return view('lecturas/index', [
+            'title'    => 'Lecturas registradas',
+            'lecturas' => $this->lecturas->listarFiltrado($filtros)->paginate(15),
+            'pager'    => $this->lecturas->pager,
+            'periodos' => $this->periodos->listarTodos(),
+            'sectores' => $this->sectores->where('activo', 1)->orderBy('nombre', 'ASC')->findAll(),
+            'filtros'  => $filtros,
+        ]);
+    }
+
+    public function tabla()
+    {
+        $filtros = $this->filtrosDesdeRequest();
+
+        return view('lecturas/_tabla', [
+            'lecturas' => $this->lecturas->listarFiltrado($filtros)->paginate(15),
+            'pager'    => $this->lecturas->pager,
+            'filtros'  => $filtros,
+        ]);
+    }
+
+    private function filtrosDesdeRequest(): array
+    {
+        return [
+            'busqueda'   => trim((string) $this->request->getGet('q')),
+            'periodo_id' => $this->request->getGet('periodo_id') ?? '',
+            'sector_id'  => $this->request->getGet('sector_id') ?? '',
+        ];
     }
 }
