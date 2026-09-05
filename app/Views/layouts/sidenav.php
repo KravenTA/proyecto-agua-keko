@@ -75,7 +75,7 @@
 
             <?php if (in_array(session()->get('rol_nombre'), ['Administrador', 'Lector'], true)) : ?>
                 <li class="nav-item">
-                    <a class="nav-link <?= url_is('lecturas*') ? 'active' : '' ?>"
+                    <a class="nav-link <?= (url_is('lecturas/pendientes*') || url_is('lecturas/registrar*')) ? 'active' : '' ?>"
                         href="<?= base_url('lecturas/pendientes') ?>">
                         <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                             <i class="ni ni-bullet-list-67 text-primary text-sm opacity-10"></i>
