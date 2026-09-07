@@ -87,3 +87,11 @@ $routes->group('dashboard', ['filter' => ['auth', 'role:Administrador,Secretaria
     $routes->get('/', 'Dashboard::index');
     $routes->get('tabla', 'Dashboard::tabla');
 });
+
+// SDGODA-62: Mantenimiento de periodos
+$routes->group('periodos', ['filter' => ['auth', 'role:Administrador']], static function ($routes) {
+    $routes->get('/', 'Periodos::index');
+    $routes->post('crear', 'Periodos::crear');
+    $routes->post('abrir/(:num)', 'Periodos::abrir/$1');
+    $routes->post('cerrar/(:num)', 'Periodos::cerrar/$1');
+});
