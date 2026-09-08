@@ -12,10 +12,13 @@ class RoleFilter implements FilterInterface
      * $arguments trae los roles permitidos, definidos en la ruta.
      * Ej: 'filter' => 'role:Administrador,Secretaria'
      */
-    public function before(RequestInterface $request, $arguments = null)
+        public function before(RequestInterface $request, $arguments = null)
     {
-        $rolesPermitidos = $arguments ?? [];
-        $rolActual       = session()->get('rol_nombre');
+        $rolesPermitidos = array_map(
+            static fn ($rol) => strtolower(trim($rol)),
+            $arguments ?? []
+        );
+        $rolActual = strtolower(trim(session()->get('rol_nombre') ?? ''));
 
         if (! in_array($rolActual, $rolesPermitidos, true)) {
             return redirect()->to('/login')
