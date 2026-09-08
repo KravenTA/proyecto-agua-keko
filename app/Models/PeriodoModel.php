@@ -50,4 +50,46 @@ class PeriodoModel extends Model
             ->orderBy('mes', 'DESC')
             ->findAll();
     }
+
+    /**
+     * True si ya existe un periodo para ese año y mes.
+     */
+    public function existe(int $anio, int $mes, ?int $exceptoId = null): bool
+    {
+        $builder = $this->where('anio', $anio)->where('mes', $mes);
+
+        if ($exceptoId !== null) {
+            $builder->where('id !=', $exceptoId);
+        }
+
+        return $builder->countAllResults() > 0;
+    }
+
+    /**
+     * Cuenta contadores activos sin lectura en el periodo. Se usa para
+     * advertir antes de cerrar: esos clientes se quedarian sin recibo.
+     */
+    public function contadoresSinLectura(int $periodoId): int
+    {
+        return $this->db->table('contadores')
+            ->join('servicios', 'servicios.id = contadores.servicio_id')
+            ->where('contadores.activo', 1)
+            ->where('servicios.estado', 'activo')
+            ->where("NOT EXISTS (
+                SELECT 1 FROM lecturas l
+                WHERE l.contador_id = contadores.id
+                  AND l.periodo_id = " . $periodoId . "
+            )", null, false)
+            ->countAllResults();
+    }
+    
+    /**
+     * Cuantas lecturas tiene registradas un periodo.
+     */
+    public function totalLecturas(int $periodoId): int
+    {
+        return $this->db->table('lecturas')
+            ->where('periodo_id', $periodoId)
+            ->countAllResults();
+    }
 }
