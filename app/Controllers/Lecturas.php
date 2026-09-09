@@ -150,6 +150,14 @@ class Lecturas extends BaseController
             ]);
         }
 
+        // FIX: la lectura y su recibo se guardan como una sola unidad. Antes,
+        // si emitirPorLectura() fallaba (por ejemplo por el bug del numero
+        // de recibo duplicado), la lectura ya insertada se quedaba guardada
+        // sin su recibo ("SIN RECIBO" en el listado) y el usuario veia un
+        // error 500 sin saber que parte si se guardo.
+        $db = \Config\Database::connect();
+        $db->transStart();
+
         $this->lecturas->insert([
             'servicio_id'       => $contador['servicio_id'],
             'contador_id'       => $contador['id'],
@@ -165,6 +173,15 @@ class Lecturas extends BaseController
 
         $lecturaId = $this->lecturas->getInsertID();
         $recibo    = $this->recibos->emitirPorLectura($lecturaId, $monto);
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return redirect()->back()->withInput()->with('errores', [
+                'No se pudo registrar la lectura, intenta de nuevo. '
+                . 'Si el error persiste, avisa en la oficina.',
+            ]);
+        }
 
         return redirect()->to('/recibos/ver/' . $recibo['id']);
     }
