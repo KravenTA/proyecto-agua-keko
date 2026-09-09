@@ -22,18 +22,24 @@ class ReciboModel extends Model
      * Genera el siguiente numero de recibo. Formato REC-000001.
      * El campo numero es UNIQUE, asi que dos emisiones simultaneas harian
      * fallar el insert en vez de duplicar el numero.
+     *
+     * Calcula el siguiente numero de recibo a partir del correlativo mas
+     * alto que exista realmente (no de la ultima fila insertada).
+     *
+     * FIX: la version anterior usaba ORDER BY id DESC, asumiendo que la
+     * fila con el id mas alto siempre tenia el numero mas alto. Si esa fila
+     * quedaba "atrasada" (por ejemplo, porque una emision anterior fallo a
+     * mitad de camino, o se cargaron datos de prueba fuera de orden), el
+     * calculo devolvia un numero que ya existia y el insert reventaba por
+     * la restriccion UNIQUE de la columna numero.
      */
     public function siguienteNumero(): string
     {
-        $ultimo = $this->select('numero')
-            ->orderBy('id', 'DESC')
+        $ultimo = $this->select("numero, CAST(SUBSTRING(numero, 5) AS UNSIGNED) AS correlativo")
+            ->orderBy('correlativo', 'DESC')
             ->first();
 
-        $correlativo = 1;
-
-        if ($ultimo && preg_match('/(\d+)$/', $ultimo['numero'], $m)) {
-            $correlativo = ((int) $m[1]) + 1;
-        }
+        $correlativo = ((int) ($ultimo['correlativo'] ?? 0)) + 1;
 
         return 'REC-' . str_pad((string) $correlativo, 6, '0', STR_PAD_LEFT);
     }
@@ -41,6 +47,13 @@ class ReciboModel extends Model
     /**
      * Emite el recibo de una lectura. Si ya existe, devuelve el que hay:
      * una lectura tiene un solo recibo.
+     *
+     * FIX: se agrega un reintento acotado por si, aun con el correlativo
+     * bien calculado, dos emisiones casi simultaneas leen el mismo
+     * "ultimo numero" antes de que la primera termine de insertar. En ese
+     * caso el UNIQUE de la BD rechaza el segundo insert; en vez de dejar
+     * pasar esa excepcion hacia arriba (lo que dejaba la lectura guardada
+     * pero sin su recibo), se vuelve a calcular el numero y se reintenta.
      */
     public function emitirPorLectura(int $lecturaId, float $montoConsumo): array
     {
@@ -51,20 +64,35 @@ class ReciboModel extends Model
         }
 
         $fechaEmision = date('Y-m-d H:i:s');
+        $intentosRestantes = 3;
 
-        $id = $this->insert([
-            'lectura_id'        => $lecturaId,
-            'numero'            => $this->siguienteNumero(),
-            'fecha_emision'     => $fechaEmision,
-            // SDGODA-53: 15 dias de plazo despues de la emision.
-            'fecha_vencimiento' => date('Y-m-d', strtotime($fechaEmision . ' +15 days')),
-            'monto_consumo'     => $montoConsumo,
-            'monto_adicional'   => 0,
-            'total'             => $montoConsumo,
-            'estado'            => 'pendiente',
-        ], true);
+        while (true) {
+            try {
+                $id = $this->insert([
+                    'lectura_id'        => $lecturaId,
+                    'numero'            => $this->siguienteNumero(),
+                    'fecha_emision'     => $fechaEmision,
+                    // SDGODA-53: 15 dias de plazo despues de la emision.
+                    'fecha_vencimiento' => date('Y-m-d', strtotime($fechaEmision . ' +15 days')),
+                    'monto_consumo'     => $montoConsumo,
+                    'monto_adicional'   => 0,
+                    'total'             => $montoConsumo,
+                    'estado'            => 'pendiente',
+                ], true);
 
-        return $this->find($id);
+                return $this->find($id);
+            } catch (\CodeIgniter\Database\Exceptions\DatabaseException $e) {
+                $esDuplicadoDeNumero = stripos($e->getMessage(), 'numero') !== false
+                    && stripos($e->getMessage(), 'duplicate') !== false;
+
+                $intentosRestantes--;
+
+                if (! $esDuplicadoDeNumero || $intentosRestantes <= 0) {
+                    throw $e;
+                }
+                // Vuelve al inicio del while y recalcula siguienteNumero().
+            }
+        }
     }
 
     /**
