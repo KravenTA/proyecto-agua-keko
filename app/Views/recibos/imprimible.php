@@ -309,9 +309,11 @@
                         Imprimir recibo
                     </button>
 
-                    <a href="<?= base_url('recibos') ?>" class="btn btn-outline-secondary">
-                        Ver todos los recibos
-                    </a>
+                    <?php if (in_array(session()->get('rol_nombre'), ['Administrador', 'Secretaria'], true)) : ?>
+                        <a href="<?= base_url('recibos') ?>" class="btn btn-outline-secondary">
+                            Ver todos los recibos
+                        </a>
+                    <?php endif; ?>
 
                     <a href="<?= base_url('lecturas/pendientes') ?>" class="btn btn-outline-secondary">
                         Pendientes de lectura

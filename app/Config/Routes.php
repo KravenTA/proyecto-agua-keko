@@ -72,10 +72,14 @@ $routes->group('lecturas', ['filter' => ['auth', 'role:Administrador,Secretaria'
     $routes->get('tabla', 'Lecturas::tabla');
 });
 
-// SDGODA-39 / SDGODA-47: Recibos emitidos
+// El recibo individual: el lector llega aca despues de registrar su lectura.
 $routes->group('recibos', ['filter' => 'auth'], static function ($routes) {
-    $routes->get('/', 'Recibos::index');
     $routes->get('ver/(:num)', 'Recibos::ver/$1');
+});
+
+// El listado completo es de oficina.
+$routes->group('recibos', ['filter' => ['auth', 'role:Administrador,Secretaria']], static function ($routes) {
+    $routes->get('/', 'Recibos::index');
     $routes->get('tabla', 'Recibos::tabla');
 });
 
