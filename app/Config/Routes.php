@@ -8,15 +8,18 @@ $routes->get('login', 'Auth::index');
 $routes->post('login', 'Auth::login');
 $routes->get('logout', 'Auth::logout');
 
-$routes->get('tarifas/nueva', 'Tarifas::create');
-$routes->post('tarifas', 'Tarifas::store');
-$routes->get('tarifas/historial', 'Tarifas::historial');
-$routes->get('tarifas/editar/(:num)', 'Tarifas::editar/$1');
-$routes->post('tarifas/actualizar/(:num)', 'Tarifas::actualizar/$1');
-$routes->post('tarifas/cerrar-vigencia/(:num)', 'Tarifas::cerrarVigencia/$1');
+// HU-04/HU-06: Mantenimiento de tarifas, solo Administrador (SDGODA-64)
+$routes->group('tarifas', ['filter' => ['auth', 'role:Administrador']], static function ($routes) {
+    $routes->get('nueva', 'Tarifas::create');
+    $routes->post('/', 'Tarifas::store');
+    $routes->get('historial', 'Tarifas::historial');
+    $routes->get('editar/(:num)', 'Tarifas::editar/$1');
+    $routes->post('actualizar/(:num)', 'Tarifas::actualizar/$1');
+    $routes->post('cerrar-vigencia/(:num)', 'Tarifas::cerrarVigencia/$1');
+});
 
-// HU-02: Gestion de usuarios y roles (SDGODA-17)
-$routes->group('usuarios', static function ($routes) {
+// HU-02: Gestion de usuarios y roles, solo Administrador (SDGODA-17, SDGODA-64)
+$routes->group('usuarios', ['filter' => ['auth', 'role:Administrador']], static function ($routes) {
     $routes->get('/', 'Usuarios::index');
     $routes->get('nuevo', 'Usuarios::nuevo');
     $routes->post('crear', 'Usuarios::crear');
@@ -26,8 +29,10 @@ $routes->group('usuarios', static function ($routes) {
     $routes->post('activar/(:num)', 'Usuarios::activar/$1');
 });
 
-// HU-07/HU-08: Registrar, editar y eliminar cliente (SDGODA-XX)
-$routes->group('clientes', static function ($routes) {
+// HU-07/HU-08: Registrar, editar y eliminar cliente. Administrador y
+// Secretaria (Secretaria registra clientes segun el alcance del curso).
+// (SDGODA-XX, SDGODA-64)
+$routes->group('clientes', ['filter' => ['auth', 'role:Administrador,Secretaria']], static function ($routes) {
     $routes->get('/', 'Clientes::index');
     $routes->get('tabla', 'Clientes::tabla');
     $routes->get('nuevo', 'Clientes::nuevo');
