@@ -14,5 +14,6 @@
 
     <!-- CSS principal de Soft UI Dashboard -->
     <link id="pagestyle" href="<?= base_url('assets/css/soft-ui-dashboard.css') ?>" rel="stylesheet">
+    <link href="<?= base_url('assets/css/oficina-agua.css') ?>" rel="stylesheet">
 </head>
 <body class="<?= $body_class ?? 'bg-gray-100' ?>">
