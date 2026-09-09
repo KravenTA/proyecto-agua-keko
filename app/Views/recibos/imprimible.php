@@ -43,6 +43,12 @@
         color: #344767;
     }
 
+    .dato-sub {
+        padding-left: 16px;
+        font-size: 13px;
+        color: #67748e;
+    }
+
     .aviso-pendientes {
         margin-bottom: 20px;
         padding: 12px 16px;
@@ -52,6 +58,32 @@
         color: #7a4a00;
         font-size: 14px;
         text-align: center;
+    }
+
+    .tabla-lecturas {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+
+    .tabla-lecturas th,
+    .tabla-lecturas td {
+        padding: 8px 6px;
+        border-bottom: 1px solid #eee;
+        text-align: right;
+    }
+
+    .tabla-lecturas th:first-child,
+    .tabla-lecturas td:first-child {
+        text-align: left;
+    }
+
+    .tabla-lecturas thead th {
+        color: #67748e;
+        text-transform: uppercase;
+        font-size: 11px;
+        border-bottom: 2px solid #344767;
     }
 
     .total {
@@ -73,6 +105,26 @@
         font-size: 32px;
         font-weight: 700;
         color: #344767;
+    }
+
+    .firma {
+        margin-top: 40px;
+        text-align: center;
+    }
+
+    .firma-linea {
+        display: inline-block;
+        font-family: 'Segoe Script', cursive;
+        font-size: 22px;
+        color: #344767;
+        border-bottom: 1px solid #344767;
+        padding: 0 30px 4px;
+        margin-bottom: 6px;
+    }
+
+    .firma-nota {
+        font-size: 11px;
+        color: #67748e;
     }
 
     .acciones {
@@ -116,6 +168,17 @@
     }
 </style>
 
+<?php
+    // SDGODA-53: nombres de mes locales, sin depender de PeriodoModel dentro de la vista.
+    $meses = [
+        1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+        5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+        9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+    ];
+
+    $totalGeneral = 0;
+?>
+
 <main class="main-content position-relative">
 
     <div class="container-fluid py-4">
@@ -141,16 +204,31 @@
                     <div class="col-md-6">
 
                         <p class="text-xs text-secondary mb-1">
-                            CLIENTE
+                            CONTRIBUYENTE
                         </p>
 
                         <h5 class="mb-1">
                             <?= esc($recibo['cliente_nombre']) ?>
                         </h5>
 
+                        <p class="text-sm mb-1">
+                            NIT: <strong><?= esc($recibo['cliente_nit'] ?: 'C/F') ?></strong>
+                        </p>
+
+                        <p class="text-sm mb-1">
+                            DPI: <strong><?= esc($recibo['cliente_dpi'] ?: 'N/D') ?></strong>
+                        </p>
+
                         <?php if (! empty($recibo['direccion'])) : ?>
                             <p class="text-sm mb-1">
-                                <?= esc($recibo['direccion']) ?>
+                                Dirección: <strong><?= esc($recibo['direccion']) ?></strong>
+                                <?php if (! empty($recibo['sector_nombre'])) : ?>
+                                    (Sector/Zona: <?= esc($recibo['sector_nombre']) ?>)
+                                <?php endif; ?>
+                            </p>
+                        <?php elseif (! empty($recibo['sector_nombre'])) : ?>
+                            <p class="text-sm mb-1">
+                                Sector/Zona: <?= esc($recibo['sector_nombre']) ?>
                             </p>
                         <?php endif; ?>
 
@@ -181,8 +259,28 @@
                         </p>
 
                         <p class="text-sm mb-0">
-                            Fecha:
+                            Fecha lectura:
                             <?= esc($recibo['fecha_lectura']) ?>
+                        </p>
+
+                        <p class="text-sm mb-0">
+                            Fecha generado:
+                            <?= esc(
+                                ! empty($recibo['fecha_emision'])
+                                    ? date('d/m/Y', strtotime($recibo['fecha_emision']))
+                                    : '—'
+                            ) ?>
+                        </p>
+
+                        <p class="text-sm mb-0">
+                            Fecha vencimiento:
+                            <strong>
+                                <?= esc(
+                                    ! empty($recibo['fecha_vencimiento'])
+                                        ? date('d/m/Y', strtotime($recibo['fecha_vencimiento']))
+                                        : '—'
+                                ) ?>
+                            </strong>
                         </p>
 
                     </div>
@@ -200,104 +298,93 @@
                     Detalle de consumo
                 </h6>
 
-                <div class="dato">
-                    <span>Lectura anterior</span>
+                <?php if (! empty($pendientes)) : ?>
 
-                    <strong>
-                        <?= number_format(
-                            (float) $recibo['lectura_anterior'],
-                            2
-                        ) ?>
-                    </strong>
-                </div>
+                    <?php foreach ($pendientes as $p) : ?>
 
-                <div class="dato">
-                    <span>Lectura actual</span>
+                        <?php
+                            $incluidoM3P     = ((float) $p['volumen_incluido_litros']) / 1000;
+                            $consumoP        = (float) $p['consumo'];
+                            $excedenteP      = max(0, $consumoP - $incluidoM3P);
+                            $cuotaMinimaP    = (float) $p['cuota_minima'];
+                            $totalP          = (float) $p['total'];
+                            $cargoExcedenteP = $excedenteP > 0 ? max(0, $totalP - $cuotaMinimaP) : 0;
+                            $totalGeneral   += $totalP;
 
-                    <strong>
-                        <?= number_format(
-                            (float) $recibo['lectura_actual'],
-                            2
-                        ) ?>
-                    </strong>
-                </div>
+                            $etiquetaP = ($meses[(int) $p['periodo_mes']] ?? 'Mes ' . $p['periodo_mes'])
+                                . ' - ' . $p['periodo_anio'];
+                        ?>
 
-                <div class="dato">
-                    <span>Consumo</span>
+                        <div class="dato">
+                            <span>Canon de Agua <?= esc($etiquetaP) ?></span>
+                            <strong>Q<?= number_format($cuotaMinimaP, 2) ?></strong>
+                        </div>
 
-                    <strong>
-                        <?= number_format(
-                            (float) $recibo['consumo'],
-                            2
-                        ) ?>
-                        m³
-                    </strong>
-                </div>
+                        <?php if ($excedenteP > 0) : ?>
+                            <div class="dato dato-sub">
+                                <span>
+                                    Exceso de Agua / Servicio de Agua por Consumo
+                                    (<?= number_format($excedenteP, 2) ?> m³)
+                                </span>
+                                <strong>Q<?= number_format($cargoExcedenteP, 2) ?></strong>
+                            </div>
+                        <?php endif; ?>
 
-                <?php
-                    $incluidoM3     = ((float) $recibo['volumen_incluido_litros']) / 1000;
-                    $consumo        = (float) $recibo['consumo'];
-                    $excedenteM3    = max(0, $consumo - $incluidoM3);
-                    $cargoExcedente = $excedenteM3 > 0 ? ((float) $recibo['monto'] - (float) $recibo['cuota_minima']) : 0;
-                ?>
+                    <?php endforeach; ?>
 
-                <div class="dato">
-                    <span>Volumen incluido</span>
-                    <strong><?= number_format($incluidoM3, 2) ?> m³</strong>
-                </div>
+                <?php else : ?>
 
-                <div class="dato">
-                    <span>Cuota mínima</span>
+                    <p class="text-sm text-secondary">
+                        No hay periodos pendientes de pago para este cliente.
+                    </p>
 
-                    <strong>
-                        Q<?= number_format(
-                            (float) $recibo['cuota_minima'],
-                            2
-                        ) ?>
-                    </strong>
-                </div>
-
-                <?php if ($excedenteM3 > 0) : ?>
-                    <div class="dato">
-                        <span>Excedente</span>
-                        <strong><?= number_format($excedenteM3, 2) ?> m³</strong>
-                    </div>
-
-                    <div class="dato">
-                        <span>Cargo por excedente</span>
-                        <strong>Q<?= number_format($cargoExcedente, 2) ?></strong>
-                    </div>
                 <?php endif; ?>
 
-                <div class="dato">
-                    <span>Tarifa aplicada</span>
+                <h6 class="text-uppercase text-secondary text-xs font-weight-bolder mt-4 mb-2">
+                    Detalle de lecturas por período
+                </h6>
 
-                    <strong>
-                        <?= esc(
-                            ucwords(
-                                str_replace(
-                                    '_',
-                                    ' ',
-                                    $recibo['tarifa_tipo']
-                                )
-                            )
-                        ) ?>
-                    </strong>
-                </div>
+                <table class="tabla-lecturas">
+                    <thead>
+                        <tr>
+                            <th>Período</th>
+                            <th>Lect. anterior</th>
+                            <th>Lect. actual</th>
+                            <th>Consumo (m³)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pendientes as $p) : ?>
+                            <?php
+                                $etiquetaFila = ($meses[(int) $p['periodo_mes']] ?? 'Mes ' . $p['periodo_mes'])
+                                    . ' - ' . $p['periodo_anio'];
+                            ?>
+                            <tr>
+                                <td><?= esc($etiquetaFila) ?></td>
+                                <td><?= number_format((float) $p['lectura_anterior'], 2) ?></td>
+                                <td><?= number_format((float) $p['lectura_actual'], 2) ?></td>
+                                <td><?= number_format((float) $p['consumo'], 2) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
 
                 <div class="total">
 
                     <div class="total-label">
-                        Monto a pagar
+                        Total general a pagar
                     </div>
 
                     <div class="total-monto">
-                        Q<?= number_format(
-                            (float) $recibo['monto'],
-                            2
-                        ) ?>
+                        Q<?= number_format($totalGeneral, 2) ?>
                     </div>
 
+                </div>
+
+                <div class="firma">
+                    <div class="firma-linea">Oficina de Agua</div>
+                    <p class="firma-nota mb-0">Firma electrónica</p>
+                    <p class="firma-nota mb-0">Generado por: Sistema</p>
                 </div>
 
                 <div class="acciones">

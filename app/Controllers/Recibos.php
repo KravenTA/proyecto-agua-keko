@@ -61,6 +61,11 @@ class Recibos extends BaseController
     /**
      * Recibo imprimible. Se identifica por el id del recibo, no por el de
      * la lectura, para que el numero de recibo sea el dato de referencia.
+     *
+     * SDGODA-53: ademas del recibo del periodo consultado, se listan todos
+     * los recibos pendientes del cliente para el desglose mes a mes
+     * (Canon de Agua / Exceso de Agua), siguiendo la factura de referencia
+     * del ingeniero.
      */
     public function ver($reciboId = null)
     {
@@ -71,6 +76,8 @@ class Recibos extends BaseController
                 ->with('errores', ['No se encontro ese recibo.']);
         }
 
+        $pendientes = $this->recibos->listarPendientesDelCliente((int) $recibo['cliente_id']);
+
         return view('recibos/imprimible', [
             'title'           => 'Recibo ' . $recibo['numero'],
             'recibo'          => $recibo,
@@ -80,7 +87,9 @@ class Recibos extends BaseController
             ]),
             // SDGODA-48: mismo dato que muestra el dashboard (HU-18) para
             // este cliente, para que los dos queden alineados.
-            'meses_pendientes' => $this->recibos->mesesPendientesDelCliente((int) $recibo['cliente_id']),
+            'meses_pendientes' => count($pendientes),
+            // SDGODA-53: desglose mes a mes para la vista tipo factura.
+            'pendientes'       => $pendientes,
         ]);
     }
 }
