@@ -1,0 +1,19 @@
+# Evita que Git convierta los saltos de linea (autocrlf) en archivos
+# binarios. En Windows, con core.autocrlf=true, esto puede corromper
+# fuentes e imagenes si Git no las detecta como binarias por su cuenta.
+
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.otf   binary
+
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.svg  binary
+
+*.pdf binary
+*.zip binary

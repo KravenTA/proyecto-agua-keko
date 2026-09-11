@@ -6,8 +6,7 @@
 <nav class="navbar navbar-expand-lg bg-white shadow-sm position-sticky top-0 z-index-3 d-xl-none">
     <div class="container-fluid px-3 py-2">
         <a class="navbar-brand m-0 d-flex align-items-center" href="<?= base_url('/') ?>">
-            <img src="<?= base_url('assets/img/logo-ct-dark.png') ?>" style="height: 28px; width: auto;" alt="logo">
-            <span class="ms-2 font-weight-bold text-sm">Oficina de Agua</span>
+        <img src="<?= base_url('assets/img/logo_keko.png') ?>" style="height: 28px; width: auto;" alt="Keko">            <span class="ms-2 font-weight-bold text-sm">Oficina de Agua</span>
         </a>
 
         <button class="navbar-toggler shadow-none border-0 p-2" type="button" id="iconNavbarSidenav">

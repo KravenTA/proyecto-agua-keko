@@ -10,7 +10,7 @@ class ClienteModel extends Model
     protected $primaryKey    = 'id';
     protected $allowedFields = [
         'nombre', 'telefono', 'direccion', 'email', 'activo', 'observaciones',
-        'dpi', 'foto_vivienda', 'recibo_luz',
+        'dpi', 'nit', 'foto_vivienda', 'recibo_luz',
     ];
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';

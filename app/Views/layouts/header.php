@@ -6,7 +6,7 @@
     <title><?= esc($title ?? 'Oficina del Agua') ?></title>
 
     <!-- Fuentes -->
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Iconos Nucleo (vienen con Soft UI Dashboard) -->
     <link href="<?= base_url('assets/css/nucleo-icons.css') ?>" rel="stylesheet">
@@ -15,5 +15,6 @@
     <!-- CSS principal de Soft UI Dashboard -->
     <link id="pagestyle" href="<?= base_url('assets/css/soft-ui-dashboard.css') ?>" rel="stylesheet">
     <link href="<?= base_url('assets/css/oficina-agua.css') ?>" rel="stylesheet">
+    <link href="<?= base_url('assets/css/tema-oficina-agua.css') ?>?v=<?= time() ?>" rel="stylesheet">
 </head>
 <body class="<?= $body_class ?? 'bg-gray-100' ?>">

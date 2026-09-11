@@ -8,6 +8,10 @@
 <main class="main-content position-relative border-radius-lg">
     <div class="container-fluid py-4">
 
+        <span class="badge bg-warning text-dark mb-3">
+            ⚠️ La sección de facturación estará disponible próximamente
+        </span>
+
         <?php if (session()->getFlashdata('exito')) : ?>
             <div class="alert alert-success text-white" role="alert">
                 <?= esc(session()->getFlashdata('exito')) ?>

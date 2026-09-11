@@ -71,6 +71,13 @@
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label ms-1">NIT (opcional)</label>
+                                <input type="text" name="nit" class="form-control"
+                                       value="<?= esc(old('nit', $cliente['nit'] ?? '')) ?>" maxlength="20"
+                                       placeholder="Ej. 1234567-8">
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label ms-1">DPI (opcional)</label>
                                 <input type="text" name="dpi" class="form-control"
                                        value="<?= esc(old('dpi', $cliente['dpi'] ?? '')) ?>" maxlength="20"

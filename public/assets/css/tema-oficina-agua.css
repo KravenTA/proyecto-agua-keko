@@ -1,0 +1,178 @@
+/*
+ * Tema Oficina del Agua — colores basados en el logo Keko (SDGODA-51)
+ *
+ * Se carga DESPUES de soft-ui-dashboard.css y oficina-agua.css en
+ * header.php, para poder sobreescribir solo lo necesario sin tocar
+ * el archivo del framework.
+ */
+
+:root {
+    --bs-primary: #FFD500;
+    --bs-primary-rgb: 255, 213, 0;
+
+    --oa-navy: #04263D;
+    --oa-blue: #35A0D8;
+    --oa-blue-light: #EAF7FF;
+}
+
+/* ---------- Sidenav: fondo marino en vez de blanco ---------- */
+
+.sidenav.bg-white {
+    background-color: var(--oa-navy) !important;
+}
+
+.sidenav .sidenav-header .navbar-brand span {
+    color: #fff;
+}
+
+.sidenav hr.horizontal.dark {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidenav .nav-link {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.sidenav .nav-link .nav-link-text {
+    color: inherit;
+}
+
+/* Estas dos reglas de aqui abajo tienen que ganarle en especificidad a
+   las de soft-ui-dashboard.css (.navbar-vertical .navbar-nav>.nav-item
+   .nav-link.active), que traen background-color:#fff a fuego. */
+.navbar-vertical.sidenav .navbar-nav > .nav-item .nav-link.active,
+.sidenav .nav-link.active {
+    background-color: var(--oa-blue-light) !important;
+}
+
+.navbar-vertical.sidenav .navbar-nav > .nav-item .nav-link.active,
+.sidenav .nav-link.active .nav-link-text,
+.sidenav .nav-link.active i {
+    color: var(--oa-navy) !important;
+}
+
+.sidenav .sidenav-footer p {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.sidenav .sidenav-footer .btn-outline-secondary {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
+.sidenav .sidenav-footer .btn-outline-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+/* ---------- Iconos del menu (SVG en linea, sin fuente) ---------- */
+
+.sidenav .nav-icon svg {
+    color: inherit;
+    width: 20px;
+    height: 20px;
+}
+
+.sidenav .nav-link.active .nav-icon svg {
+    color: var(--oa-navy);
+}
+
+/* ---------- Badges de estado "pendiente" en toda la app ---------- */
+
+.badge.bg-gradient-warning {
+    background-image: none !important;
+    background-color: var(--bs-primary) !important;
+    color: #332B00 !important;
+}
+
+/* ---------- Logo del sidenav mas grande ----------
+   La plantilla usa la clase h-100 de Bootstrap en el <img>, que fuerza
+   height:100% del contenedor (con !important). Un simple max-height no
+   le gana a eso, por eso hay que poner height directo aqui tambien. */
+
+.sidenav-header {
+    height: auto !important;
+    padding: 10px 0 6px;
+}
+
+.navbar-vertical .navbar-brand-img {
+    height: 130px !important;
+    width: 130px !important;
+    max-height: none !important;
+    max-width: none !important;
+    object-fit: contain !important;
+}
+
+.sidenav-header .navbar-brand {
+    flex-direction: column;
+    text-align: center;
+    gap: 2px;
+}
+
+/* ---------- Encabezados de tarjetas ---------- */
+
+.card-header h6 {
+    color: var(--oa-navy);
+}
+
+/* ---------- Recibo imprimible ---------- */
+
+.recibo-header {
+    border-bottom-color: var(--oa-navy) !important;
+}
+
+.total-monto {
+    color: var(--oa-navy) !important;
+}
+
+.total {
+    background-color: var(--oa-blue-light) !important;
+}
+
+/* ---------- Botones primarios (Registrar lectura, Guardar, etc.) ----------
+   btn-primary en la plantilla trae el naranja escrito literal, no conectado
+   a --bs-primary, por eso hay que pisarlo aparte aqui. */
+
+.btn-primary {
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-bg: #E6C100;
+    --bs-btn-hover-border-color: #E6C100;
+    --bs-btn-active-bg: #CCAB00;
+    --bs-btn-active-border-color: #CCAB00;
+    --bs-btn-disabled-bg: var(--bs-primary);
+    --bs-btn-disabled-border-color: var(--bs-primary);
+    color: #332B00 !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    color: #332B00 !important;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--oa-navy);
+    --bs-btn-border-color: var(--oa-navy);
+    --bs-btn-hover-bg: var(--oa-navy);
+    --bs-btn-hover-border-color: var(--oa-navy);
+    --bs-btn-active-bg: var(--oa-navy);
+    --bs-btn-active-border-color: var(--oa-navy);
+}
+
+/* ---------- Tipografia: Poppins en todo el sitio ---------- */
+
+body, .btn, .form-control, h1, h2, h3, h4, h5, h6,
+.nav-link, .card-header, .navbar-brand span {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* ---------- Quitar TODOS los degradados de la plantilla, dejar colores solidos ---------- */
+
+.bg-gradient-primary   { background-image: none !important; background-color: var(--bs-primary) !important; }
+.bg-gradient-secondary { background-image: none !important; background-color: #4B5563 !important; }
+.bg-gradient-success   { background-image: none !important; background-color: #22c55e !important; }
+.bg-gradient-info      { background-image: none !important; background-color: var(--oa-blue) !important; }
+.bg-gradient-warning   { background-image: none !important; background-color: var(--bs-primary) !important; }
+.bg-gradient-danger    { background-image: none !important; background-color: #ef4444 !important; }
+.bg-gradient-dark      { background-image: none !important; background-color: var(--oa-navy) !important; }
