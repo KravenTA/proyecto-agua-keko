@@ -6,11 +6,15 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-                        <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1"
+                        <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1 d-flex align-items-center justify-content-between px-3"
                              style="background: linear-gradient(135deg, #1565c0 0%, #29b6f6 100%);">
-                            <h5 class="text-white font-weight-bolder text-center mt-2 mb-0">
+                            <h5 class="text-white font-weight-bolder text-center mt-2 mb-0 flex-grow-1">
                                 Historial de tarifas
                             </h5>
+                            <a href="<?= base_url('tarifas/nueva') ?>"
+                               class="btn btn-sm bg-white text-primary m-0 mt-2">
+                                + Nueva tarifa
+                            </a>
                         </div>
                     </div>
                     <div class="card-body">
