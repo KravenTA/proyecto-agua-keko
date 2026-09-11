@@ -8,6 +8,8 @@ $routes->get('login', 'Auth::index');
 $routes->post('login', 'Auth::login');
 $routes->get('logout', 'Auth::logout');
 
+$routes->get('equipo', 'Equipo::index', ['filter' => 'auth']);
+
 // HU-04/HU-06: Mantenimiento de tarifas, solo Administrador (SDGODA-64)
 $routes->group('tarifas', ['filter' => ['auth', 'role:Administrador']], static function ($routes) {
     $routes->get('nueva', 'Tarifas::create');
