@@ -1,3 +1,23 @@
+## Equipo
+
+| Nombre completo | Carnet | Correo electrónico | Rol dentro del equipo |
+|---|---|---|---|
+| Yourgen Kraven Thommel Arevalo |0905-23-14003|ythommela@miumg.edu.gt |Coordinador|
+| Karen Yamileth Jiménez Galicia |0905-23-7626|kjimenezg6@miumg.edu.gt |Desarrolladora|
+| Enner Osvaldo Godoy Ramirez |0905-23-15908 |egodoyr2@miumg.edu.gt |Desarrollador|
+| Oliver Isaac Godoy Salguero |0905-23-10816 |ogodoys@miumg.edu.gt |Desarrollador|
+
+> **Líder del equipo:** _(Yourgen Kraven Thommel Arevalo)_
+
+Proyecto del curso, Universidad Mariano Gálvez.
+Coordinación del curso: wcordovz1@umg.edu.gt
+
+---
+
+## Proyecto en Jira
+
+[Tablero del proyecto (SDGODA)](https://miumg-team-cuatro.atlassian.net/jira/software/projects/SDGODA/list?jql=project+%3D+SDGODA+ORDER+BY+cf%5B10019%5D+ASC&atlOrigin=eyJpIjoiYzM2MTRkMjg5NzBjNGYyZDgzOTVhOThmZDdhMDQ4NTUiLCJwIjoiaiJ9)
+
 # Sistema de Gestión — Oficina de Agua
 
 Sistema web para digitalizar el control de una oficina comunitaria de agua
@@ -253,15 +273,3 @@ uno mismo:
 git fetch origin
 git merge origin/master
 ```
-
-## Equipo
-
-| Integrantes |
-|---|
-| Yourgen Kraven Thommel Arevalo|
-| Karen Yamileth Jiménez Galicia |
-| Enner Osvaldo Godoy Ramirez |
-| Oliver Isaac Godoy Salguero |
-
-Proyecto del curso, Universidad Mariano Gálvez.
-Coordinación del curso: wcordovz1@umg.edu.gt
