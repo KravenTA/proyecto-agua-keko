@@ -60,7 +60,7 @@
                 </li>
             <?php endif; ?>
 
-            <?php if (session()->get('rol_nombre') === 'Administrador') : ?>
+            <?php if (in_array(session()->get('rol_nombre'), ['Administrador', 'Secretaria'], true)) : ?>
                 <li class="nav-item">
                     <a class="nav-link <?= url_is('contadores*') ? 'active' : '' ?>"
                        href="<?= base_url('contadores') ?>">
