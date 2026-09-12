@@ -24,6 +24,7 @@ class Dashboard extends BaseController
             'title'    => 'Dashboard',
             'clientes' => $this->clientes->estadoDeCuenta($filtros),
             'filtros'  => $filtros,
+            'resumen'  => $this->clientes->resumenDashboard(),
         ]);
     }
 

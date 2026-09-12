@@ -21,14 +21,15 @@
             <?php endif; ?>
 
             <?php foreach ($clientes as $c) : ?>
-                <tr>
+                <?php $urgente = (int) $c['meses_pendientes'] >= 2; ?>
+                <tr<?= $urgente ? ' class="table-danger"' : '' ?>>
                     <td class="ps-4">
                         <span class="text-sm font-weight-bold"><?= esc($c['nombre']) ?></span>
                     </td>
                     <td><span class="text-sm text-secondary"><?= esc($c['telefono']) ?></span></td>
                     <td><span class="text-sm text-secondary"><?= esc($c['direccion']) ?></span></td>
                     <td>
-                        <span class="text-sm text-secondary">
+                        <span class="text-sm <?= $urgente ? 'text-danger font-weight-bold' : 'text-secondary' ?>">
                             <?= (int) $c['meses_pendientes'] > 0 ? (int) $c['meses_pendientes'] : '-' ?>
                         </span>
                     </td>
