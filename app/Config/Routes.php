@@ -105,4 +105,5 @@ $routes->group('periodos', ['filter' => ['auth', 'role:Administrador']], static 
     $routes->post('crear', 'Periodos::crear');
     $routes->post('abrir/(:num)', 'Periodos::abrir/$1');
     $routes->post('cerrar/(:num)', 'Periodos::cerrar/$1');
+    $routes->get('auditoria', 'Auditoria::index', ['filter' => ['auth', 'role:Administrador']]);
 });
