@@ -8,6 +8,41 @@
 <main class="main-content position-relative border-radius-lg">
     <div class="container-fluid py-4">
 
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card h-100 bg-gradient-info text-white">
+                    <div class="card-body">
+                        <p class="text-xs mb-1 text-uppercase text-white opacity-8">Total clientes</p>
+                        <h4 class="mb-0 text-white"><?= (int) $resumen['total_clientes'] ?></h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card h-100 bg-gradient-success text-white">
+                    <div class="card-body">
+                        <p class="text-xs mb-1 text-uppercase text-white opacity-8">Al día</p>
+                        <h4 class="mb-0 text-white"><?= (int) $resumen['clientes_al_dia'] ?></h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card h-100 bg-gradient-warning">
+                    <div class="card-body">
+                        <p class="text-xs mb-1 text-uppercase opacity-8">Pendientes</p>
+                        <h4 class="mb-0"><?= (int) $resumen['clientes_pendiente'] ?></h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card h-100 bg-gradient-dark text-white">
+                    <div class="card-body">
+                        <p class="text-xs mb-1 text-uppercase text-white opacity-8">Monto pendiente</p>
+                        <h4 class="mb-0 text-white">Q<?= number_format($resumen['monto_pendiente'], 2) ?></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card mb-4">
             <div class="card-header pb-0">
                 <h6 class="mb-0">Estado de cuenta de clientes</h6>

@@ -99,4 +99,39 @@ class ClienteModel extends Model
 
         return $builder->orderBy('clientes.nombre', 'ASC')->get()->getResultArray();
     }
+
+    /**
+     * Numeros de resumen para las tarjetas del Dashboard (sin filtros,
+     * siempre reflejan el total real, independiente de lo que se busque
+     * en la tabla de abajo).
+     */
+    public function resumenDashboard(): array
+    {
+        $totalClientes = $this->countAll();
+
+        $conPendiente = (int) $this->db->table('clientes')
+            ->select('COUNT(DISTINCT clientes.id) AS total', false)
+            ->join('servicios', 'servicios.cliente_id = clientes.id', 'left')
+            ->join('lecturas', 'lecturas.servicio_id = servicios.id', 'left')
+            ->join('recibos', "recibos.lectura_id = lecturas.id AND recibos.estado = 'pendiente'", 'left')
+            ->where('recibos.id IS NOT NULL', null, false)
+            ->get()->getRow()->total;
+
+        $montoPendiente = $this->db->table('recibos')
+            ->selectSum('total')
+            ->where('estado', 'pendiente')
+            ->get()->getRow()->total ?? 0;
+
+        $recibosPendientes = (int) $this->db->table('recibos')
+            ->where('estado', 'pendiente')
+            ->countAllResults();
+
+        return [
+            'total_clientes'     => $totalClientes,
+            'clientes_al_dia'    => $totalClientes - $conPendiente,
+            'clientes_pendiente' => $conPendiente,
+            'monto_pendiente'    => (float) $montoPendiente,
+            'recibos_pendientes' => $recibosPendientes,
+        ];
+    }
 }

@@ -259,6 +259,13 @@
                         </p>
 
                         <p class="text-sm mb-0">
+                            Tipo de paja:
+                            <strong>
+                                <?= esc($recibo['tarifa_tipo'] ?? '—') ?>
+                            </strong>
+                        </p>
+
+                        <p class="text-sm mb-0">
                             Fecha lectura:
                             <?= esc($recibo['fecha_lectura']) ?>
                         </p>
