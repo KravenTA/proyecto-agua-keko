@@ -23,4 +23,29 @@ class AuditoriaModel extends Model
             ->orderBy('created_at', 'DESC')
             ->findAll();
     }
+
+    /**
+     * Listado general de auditoria, con el nombre del usuario que hizo el
+     * cambio, mas reciente primero. Para la pantalla de consulta.
+     */
+    public function listarConUsuario(array $filtros = []): array
+    {
+        $builder = $this->select('
+                auditoria.id,
+                auditoria.tabla,
+                auditoria.registro_id,
+                auditoria.accion,
+                auditoria.datos_anteriores,
+                auditoria.datos_nuevos,
+                auditoria.created_at,
+                usuarios.nombre AS usuario_nombre
+            ')
+            ->join('usuarios', 'usuarios.id = auditoria.usuario_id', 'left');
+
+        if (! empty($filtros['tabla'])) {
+            $builder->where('auditoria.tabla', $filtros['tabla']);
+        }
+
+        return $builder->orderBy('auditoria.created_at', 'DESC')->findAll(200);
+    }
 }

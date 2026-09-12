@@ -133,6 +133,18 @@
                 </li>
             <?php endif; ?>
 
+            <?php if (session()->get('rol_nombre') === 'Administrador') : ?>
+                <li class="nav-item">
+                    <a class="nav-link <?= url_is('auditoria*') ? 'active' : '' ?>"
+                       href="<?= base_url('auditoria') ?>">
+                        <span class="nav-icon me-2 d-flex align-items-center justify-content-center">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 3H8l1-3z"/><path d="M6 6h12l-1 15H7L6 6z"/><line x1="10" y1="10" x2="10" y2="17"/><line x1="14" y1="10" x2="14" y2="17"/></svg>
+                        </span>
+                        <span class="nav-link-text ms-1">Auditoría</span>
+                    </a>
+                </li>
+            <?php endif; ?>
+
             <li class="nav-item">
                 <a class="nav-link <?= url_is('equipo*') ? 'active' : '' ?>"
                    href="<?= base_url('equipo') ?>">
