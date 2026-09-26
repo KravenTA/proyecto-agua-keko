@@ -58,9 +58,10 @@
 
                             <div class="mb-3">
                                 <label class="form-label ms-1">Direccion</label>
-                                <textarea name="direccion" class="form-control" rows="2" required
+                                <textarea name="direccion" id="direccion" class="form-control" rows="2" required
                                           minlength="5" maxlength="255"
                                           placeholder="Ej. Caserio Los Cerritos, Canton Valencia, Jutiapa"><?= esc(old('direccion', $cliente['direccion'] ?? '')) ?></textarea>
+                                <small class="text-secondary d-block text-end mt-1" id="contador-direccion">0/255 caracteres</small>
                             </div>
 
                             <div class="mb-3">
@@ -125,5 +126,31 @@
         </div>
     </div>
 </main>
+
+<script>
+(function () {
+    const campo    = document.getElementById('direccion');
+    const contador = document.getElementById('contador-direccion');
+    const limite   = campo.maxLength;
+
+    function actualizarContador() {
+        const actual = campo.value.length;
+        contador.textContent = actual + '/' + limite + ' caracteres';
+
+        contador.classList.remove('text-secondary', 'text-warning', 'text-danger');
+
+        if (actual >= limite) {
+            contador.classList.add('text-danger');
+        } else if (actual >= limite * 0.9) {
+            contador.classList.add('text-warning');
+        } else {
+            contador.classList.add('text-secondary');
+        }
+    }
+
+    campo.addEventListener('input', actualizarContador);
+    actualizarContador();
+})();
+</script>
 
 <?= view('layouts/footer') ?>
