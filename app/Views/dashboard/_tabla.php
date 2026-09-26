@@ -1,11 +1,28 @@
+<?php
+$ordenActual     = $filtros['orden'] ?? 'nombre';
+$direccionActual = strtoupper($filtros['direccion'] ?? 'ASC');
+
+$indicador = static function (string $campo) use ($ordenActual, $direccionActual): string {
+    if ($ordenActual !== $campo) {
+        return '';
+    }
+    return $direccionActual === 'ASC' ? ' ⬆️' : ' ⬇️';
+};
+?>
 <div class="table-responsive p-0">
     <table class="table align-items-center mb-0">
         <thead>
             <tr>
-                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-4">Cliente</th>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-4 col-ordenable"
+                    data-orden="nombre" role="button">
+                    Cliente<?= $indicador('nombre') ?>
+                </th>
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Telefono</th>
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Direccion</th>
-                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Meses pendientes</th>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 col-ordenable"
+                    data-orden="meses_pendientes" role="button">
+                    Meses pendientes<?= $indicador('meses_pendientes') ?>
+                </th>
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Estado</th>
             </tr>
         </thead>

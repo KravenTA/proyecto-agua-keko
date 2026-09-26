@@ -56,10 +56,16 @@
     let temporizador = null;
     let controlador  = null;
 
+    // NUEVO: estado de ordenamiento
+    let orden     = '<?= esc($filtros['orden'] ?? 'nombre') ?>';
+    let direccion = '<?= esc($filtros['direccion'] ?? 'ASC') ?>';
+
     function construirUrl() {
         const params = new URLSearchParams();
         if (buscador.value.trim() !== '') params.set('q', buscador.value.trim());
         if (estado.value !== '') params.set('estado', estado.value);
+        params.set('orden', orden);        // NUEVO
+        params.set('direccion', direccion); // NUEVO
         return '<?= base_url('dashboard/tabla') ?>?' + params.toString();
     }
 
@@ -82,6 +88,8 @@
             const paramsUrl = new URLSearchParams();
             if (buscador.value.trim() !== '') paramsUrl.set('q', buscador.value.trim());
             if (estado.value !== '') paramsUrl.set('estado', estado.value);
+            paramsUrl.set('orden', orden);        // NUEVO
+            paramsUrl.set('direccion', direccion); // NUEVO
             const query = paramsUrl.toString();
             history.replaceState(null, '', '<?= base_url('dashboard') ?>' + (query ? '?' + query : ''));
 
@@ -102,6 +110,20 @@
     });
 
     estado.addEventListener('change', actualizar);
+
+    contenedor.addEventListener('click', function (e) {
+        const th = e.target.closest('[data-orden]');
+        if (! th) return;
+
+        const campo = th.dataset.orden;
+        if (orden === campo) {
+            direccion = direccion === 'ASC' ? 'DESC' : 'ASC';
+        } else {
+            orden     = campo;
+            direccion = 'ASC';
+        }
+        actualizar();
+    });
 })();
 </script>
 
