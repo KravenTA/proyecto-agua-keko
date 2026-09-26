@@ -273,3 +273,8 @@ uno mismo:
 git fetch origin
 git merge origin/master
 ```
+
+## Mejoras implementadas
+
+5 Ordenamiento de columnas
+6 Contador de caracteres

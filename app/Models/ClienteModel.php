@@ -67,6 +67,18 @@ class ClienteModel extends Model
      */
     public function estadoDeCuenta(array $filtros = []): array
     {
+        $ordenesPermitidos = [
+            'nombre'           => 'clientes.nombre',
+            'meses_pendientes' => 'meses_pendientes',
+        ];
+
+        $orden = $ordenesPermitidos[$filtros['orden'] ?? 'nombre']
+            ?? $ordenesPermitidos['nombre'];
+
+        $direccion = strtoupper((string) ($filtros['direccion'] ?? 'ASC')) === 'DESC'
+            ? 'DESC'
+            : 'ASC';    
+
         $builder = $this->db->table('clientes')
             ->select("
                 clientes.id,
@@ -97,6 +109,6 @@ class ClienteModel extends Model
             $builder->having('estado_cuenta', $filtros['estado']);
         }
 
-        return $builder->orderBy('clientes.nombre', 'ASC')->get()->getResultArray();
+        return $builder->orderBy($orden, $direccion)->get()->getResultArray();
     }
 }
