@@ -16,5 +16,8 @@
     <!-- JS de Soft UI Dashboard -->
     <script src="<?= base_url('assets/js/plugins/perfect-scrollbar.min.js') ?>"></script>
     <script src="<?= base_url('assets/js/soft-ui-dashboard.min.js') ?>"></script>
+
+    <!-- Contador de caracteres (Parcial 2): se activa solo en campos con data-contador -->
+    <script src="<?= base_url('assets/js/contador-caracteres.js') ?>"></script>
 </body>
 </html>

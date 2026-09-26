@@ -44,7 +44,7 @@
                                 <label class="form-label ms-1">Nombre completo</label>
                                 <input type="text" name="nombre" class="form-control"
                                        value="<?= esc(old('nombre', $cliente['nombre'] ?? '')) ?>"
-                                       required minlength="3" maxlength="100"
+                                       required minlength="3" maxlength="100" data-contador
                                        placeholder="Ej. Maria Lopez Garcia">
                             </div>
 
@@ -59,14 +59,14 @@
                             <div class="mb-3">
                                 <label class="form-label ms-1">Direccion</label>
                                 <textarea name="direccion" class="form-control" rows="2" required
-                                          minlength="5" maxlength="255"
+                                          minlength="5" maxlength="255" data-contador
                                           placeholder="Ej. Caserio Los Cerritos, Canton Valencia, Jutiapa"><?= esc(old('direccion', $cliente['direccion'] ?? '')) ?></textarea>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label ms-1">Correo electronico (opcional)</label>
                                 <input type="email" name="email" class="form-control"
-                                       value="<?= esc(old('email', $cliente['email'] ?? '')) ?>" maxlength="150"
+                                       value="<?= esc(old('email', $cliente['email'] ?? '')) ?>" maxlength="150" data-contador
                                        placeholder="Para notificaciones y recibos">
                             </div>
 

@@ -19,6 +19,9 @@ class ClienteModel extends Model
     /**
      * Prepara la consulta de busqueda para el listado paginado. (HU-09)
      * Devuelve el modelo listo para llamar a paginate().
+     *
+     * El ordenamiento ya no se fija aqui: lo decide el controller
+     * (Clientes::leerOrden) segun la columna que el usuario elija.
      */
     public function buscar(string $termino = '', string $activo = '')
     {
@@ -34,7 +37,7 @@ class ClienteModel extends Model
             $this->where('activo', $activo);
         }
 
-        return $this->orderBy('nombre', 'ASC');
+        return $this;
     }
 
     /**

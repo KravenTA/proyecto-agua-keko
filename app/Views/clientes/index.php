@@ -5,6 +5,23 @@
 
 <?= view('layouts/sidenav') ?>
 
+<style>
+    /* Encabezados ordenables (Parcial 2): se ven como texto, no como enlace azul */
+    .ordenar {
+        color: inherit;
+        text-decoration: none;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .ordenar:hover {
+        text-decoration: underline;
+    }
+    .flecha-orden {
+        font-size: 0.75rem;
+        margin-left: 2px;
+    }
+</style>
+
 <main class="main-content position-relative border-radius-lg">
     <div class="container-fluid py-4">
 
@@ -60,6 +77,8 @@
                         'pager'    => $pager,
                         'termino'  => $termino,
                         'activo'   => $activo,
+                        'orden'    => $orden,
+                        'dir'      => $dir,
                     ]) ?>
             </div>
         </div>
@@ -75,6 +94,10 @@
     const cargando   = document.getElementById('cargando');
     const urlBase    = '<?= base_url('clientes/tabla') ?>';
 
+    // Orden actual (Parcial 2). Arranca con lo que mando el controller.
+    let ordenActual = '<?= esc($orden, 'js') ?>';
+    let dirActual   = '<?= esc($dir, 'js') ?>';
+
     let temporizador = null;
     let peticion     = null;
 
@@ -82,6 +105,8 @@
         const params = new URLSearchParams();
         if (buscador.value.trim() !== '') params.set('q', buscador.value.trim());
         if (filtro.value !== '')          params.set('activo', filtro.value);
+        params.set('orden', ordenActual);
+        params.set('dir', dirActual);
         if (pagina)                       params.set('page', pagina);
         return urlBase + '?' + params.toString();
     }
@@ -102,7 +127,7 @@
 
             contenedor.innerHTML = await respuesta.text();
 
-            // Refleja la busqueda en la URL sin recargar, para poder compartirla.
+            // Refleja la busqueda y el orden en la URL sin recargar, para poder compartirla.
             history.replaceState(null, '', '<?= base_url('clientes') ?>?' +
                 construirUrl(pagina).split('?')[1]);
 
@@ -125,9 +150,21 @@
 
     filtro.addEventListener('change', () => actualizar(1));
 
-    // Los enlaces del paginador se generan despues, por eso se escucha
-    // el contenedor y no cada enlace por separado.
+    // Los enlaces del paginador y los encabezados se generan despues (vienen
+    // en el HTML del AJAX), por eso se escucha el contenedor y no cada enlace.
     contenedor.addEventListener('click', function (evento) {
+
+        // Clic en un encabezado ordenable (Parcial 2)
+        const encabezado = evento.target.closest('a.ordenar');
+        if (encabezado) {
+            evento.preventDefault();
+            ordenActual = encabezado.dataset.orden;
+            dirActual   = encabezado.dataset.dir;
+            actualizar(1); // al cambiar el orden se regresa a la primera pagina
+            return;
+        }
+
+        // Clic en el paginador
         const enlace = evento.target.closest('.pagination a');
         if (! enlace) return;
 

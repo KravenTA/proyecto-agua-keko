@@ -17,8 +17,11 @@ class Clientes extends BaseController
     {
         $termino = trim((string) $this->request->getGet('q'));
         $activo  = (string) ($this->request->getGet('activo') ?? '');
+        [$orden, $dir] = $this->leerOrden();
 
-        $clientes = $this->clientes->buscar($termino, $activo)->paginate(10);
+        $clientes = $this->clientes->buscar($termino, $activo)
+            ->orderBy($orden, $dir)
+            ->paginate(10);
 
         return view('clientes/index', [
             'title'    => 'Clientes',
@@ -26,6 +29,8 @@ class Clientes extends BaseController
             'pager'    => $this->clientes->pager,
             'termino'  => $termino,
             'activo'   => $activo,
+            'orden'    => $orden,
+            'dir'      => $dir,
         ]);
     }
 
@@ -37,14 +42,19 @@ class Clientes extends BaseController
     {
         $termino = trim((string) $this->request->getGet('q'));
         $activo  = (string) ($this->request->getGet('activo') ?? '');
+        [$orden, $dir] = $this->leerOrden();
 
-        $clientes = $this->clientes->buscar($termino, $activo)->paginate(10);
+        $clientes = $this->clientes->buscar($termino, $activo)
+            ->orderBy($orden, $dir)
+            ->paginate(10);
 
         return view('clientes/_tabla', [
             'clientes' => $clientes,
             'pager'    => $this->clientes->pager,
             'termino'  => $termino,
             'activo'   => $activo,
+            'orden'    => $orden,
+            'dir'      => $dir,
         ]);
     }
 
@@ -228,6 +238,29 @@ class Clientes extends BaseController
         $archivo->move($carpeta, $nombreNuevo);
 
         return 'uploads/clientes/' . $nombreNuevo;
+    }
+
+    /**
+     * Lee la columna y direccion de ordenamiento desde la URL.
+     * Solo se aceptan columnas de la lista blanca, para evitar
+     * que alguien mande cualquier cosa al ORDER BY.
+     */
+    private function leerOrden(): array
+    {
+        $permitidas = ['id', 'nombre', 'telefono', 'direccion'];
+
+        $orden = (string) $this->request->getGet('orden');
+        $dir   = strtolower((string) $this->request->getGet('dir'));
+
+        if (! in_array($orden, $permitidas, true)) {
+            $orden = 'nombre';
+        }
+
+        if (! in_array($dir, ['asc', 'desc'], true)) {
+            $dir = 'asc';
+        }
+
+        return [$orden, $dir];
     }
 
     private function reglasValidacion(): array

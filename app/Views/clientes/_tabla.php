@@ -1,10 +1,52 @@
+<?php
+/**
+ * Encabezados ordenables (Parcial 2 - ordenamiento de columnas).
+ * $orden y $dir vienen del controller (Clientes::leerOrden).
+ */
+$orden = $orden ?? 'nombre';
+$dir   = $dir ?? 'asc';
+
+$encabezado = function (string $columna, string $texto, string $clasesExtra = '') use ($orden, $dir, $termino, $activo): string {
+    $esActiva = ($orden === $columna);
+
+    // Si ya esta ordenada ascendente, el siguiente clic la pone descendente.
+    $siguiente = ($esActiva && $dir === 'asc') ? 'desc' : 'asc';
+
+    if ($esActiva) {
+        $flecha   = $dir === 'asc' ? '▲' : '▼';
+        $ariaSort = $dir === 'asc' ? 'ascending' : 'descending';
+    } else {
+        $flecha   = '⇅';
+        $ariaSort = 'none';
+    }
+
+    // Enlace normal como respaldo (funciona aunque no cargue el JavaScript).
+    $parametros = array_filter([
+        'q'      => $termino,
+        'activo' => $activo,
+        'orden'  => $columna,
+        'dir'    => $siguiente,
+    ], fn ($valor) => $valor !== '');
+
+    $url = base_url('clientes') . '?' . http_build_query($parametros);
+
+    $colorTexto = $esActiva ? 'text-dark' : 'text-secondary opacity-7';
+    $colorFlecha = $esActiva ? '' : ' opacity-5';
+    $titulo = 'Ordenar ' . ($siguiente === 'asc' ? 'ascendente' : 'descendente');
+
+    return '<th class="text-uppercase text-xxs font-weight-bolder ' . $colorTexto . ' ' . $clasesExtra . '" aria-sort="' . $ariaSort . '">'
+        . '<a href="' . esc($url, 'attr') . '" class="ordenar" data-orden="' . esc($columna, 'attr') . '" data-dir="' . $siguiente . '" title="' . $titulo . '">'
+        . esc($texto) . ' <span class="flecha-orden' . $colorFlecha . '">' . $flecha . '</span>'
+        . '</a></th>';
+};
+?>
 <div class="table-responsive p-0 tabla-ancha">
     <table class="table align-items-center mb-0">
         <thead>
             <tr>
-                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-4">Nombre</th>
-                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Telefono</th>
-                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Direccion</th>
+                <?= $encabezado('nombre', 'Nombre', 'ps-4') ?>
+                <?= $encabezado('telefono', 'Telefono') ?>
+                <?= $encabezado('direccion', 'Direccion') ?>
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Correo</th>
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Docs</th>
                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Estado</th>
